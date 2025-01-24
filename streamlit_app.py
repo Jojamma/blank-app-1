@@ -63,7 +63,7 @@ else:
         
         # Button to return to the main page
         if st.button("Back to Main"):
-            st.session_state.show_log_page = False
+            st.session_state.show_log_page = False  # Reset flag for main page
             # Force rerun to go back to main page
             st.rerun()
     else:
@@ -128,5 +128,5 @@ else:
                     log_results(model_type, core_option, uploaded_file.name)
                     st.success("Results logged successfully!")
                     # Navigate to log page by setting session state variable and rerunning app
-                    st.session_state.show_log_page = True
+                    st.session_state.show_log_page = True  # Set flag for log page display
                     st.rerun()
