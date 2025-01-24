@@ -31,23 +31,26 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
             with open("upload_log.txt", "a") as log_file:
                 log_file.write(log_entry)
     except Exception as e:
-        print(f"Error writing to log file: {e}")
+        st.error(f"Error writing to log file: {e}")
 
 # Function to read logs from the file
 def read_logs():
     try:
         if not os.path.exists("upload_log.txt"):
+            st.write("Log file not found!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
         
         logs = pd.read_csv("upload_log.txt")
         
         if logs.empty:
+            st.write("Log file is empty!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
         
+        st.write(f"Logs found: {logs.shape[0]} rows.")  # Debug print to check number of rows in logs
         return logs
 
     except Exception as e:
-        print(f"Error reading logs: {e}")
+        st.write(f"Error reading logs: {e}")
         return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
 
 # Initialize session states if they don't exist
