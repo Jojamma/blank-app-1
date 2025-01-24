@@ -35,6 +35,7 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
         st.error(f"Error writing to log file: {e}")
 
 # Function to read logs from the file
+@st.cache_data  # This prevents caching the log reading, ensures fresh data each time
 def read_logs():
     try:
         if not os.path.exists("upload_log.txt"):
