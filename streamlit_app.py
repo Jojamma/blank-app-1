@@ -77,7 +77,7 @@ else:
     st.session_state.current_page = page
 
     if st.session_state.current_page == "Uploader":
-        # File uploader for dataset (removed the title here)
+        # File uploader for dataset
         
         # File uploader for dataset
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
@@ -101,17 +101,23 @@ else:
 
                 if uploaded_file.name.endswith('.csv'):
                     try:
-                        # Read and process CSV in chunks to avoid memory issues
-                        chunk_size = 10 ** 6  # Adjust chunk size as needed
-
-                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                            pass  # Process each chunk as needed
+                        # Read and display CSV column names
+                        data = pd.read_csv(uploaded_file)
+                        column_names = data.columns.tolist()
+                        st.write("Column Names:", column_names)  # Display column names
 
                     except Exception as e:
                         st.error(f"Error reading CSV file: {e}")
 
                 elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                    pass  # Handle image files here
+                    # Handle image files here
+                    folder_path = os.path.dirname(uploaded_file.name)  # Get folder name (if applicable)
+                    image_count = len([f for f in os.listdir(folder_path) if f.endswith(('.jpg', '.jpeg', '.png'))]) if os.path.exists(folder_path) else 0
+                    
+                    if image_count > 0:
+                        st.write(f"Number of images present: {image_count}")
+                    else:
+                        st.write(f"No images found in folder: {folder_path}")
 
                 else:
                     st.error("Unsupported file type. Please upload a CSV or image file.")
