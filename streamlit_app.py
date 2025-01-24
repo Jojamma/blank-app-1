@@ -1,6 +1,5 @@
 # main_app.py
 import streamlit as st
-
 def run():
     # Title of the app
     st.title("Large File Uploader")
