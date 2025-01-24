@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 from openpyxl import Workbook
-
 # Title of the app
 st.title("Large File Uploader with Excel Logging")
 
