@@ -10,12 +10,6 @@ PASSWORD = "password"
 # Function to check credentials
 def check_credentials(username, password):
     return username == USERNAME and password == PASSWORD
-if os.path.exists("upload_log.txt"):
-    with open("upload_log.txt", "r") as f:
-        print(f"Log file contents:\n{f.read()}")
-else:
-    print("Log file does not exist.")
-
 
 # Function to log results to a file
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
