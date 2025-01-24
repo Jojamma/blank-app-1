@@ -4,6 +4,7 @@ import os
 
 # Title of the app
 st.title("Large File Uploader")
+
 # File uploader for dataset
 uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
@@ -22,25 +23,25 @@ if st.button("Run"):
                 # Read and process CSV in chunks to avoid memory issues
                 st.write("Processing CSV file...")
                 chunk_size = 10 ** 6  # Adjust chunk size as needed
+                column_names = None
+                
                 for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+                    if column_names is None:
+                        column_names = chunk.columns.tolist()  # Get column names from the first chunk
                     st.write(f"Processed a chunk with {len(chunk)} rows.")
-                st.success("CSV processing complete!")
+                
+                # Display column names after processing all chunks
+                st.write("CSV Column Names:", column_names)
+                
             except Exception as e:
                 st.error(f"Error reading CSV file: {e}")
         
-        # If it's not a CSV, treat it as generic data (e.g., images or binary files)
+        # Check if it's an image or other file types
+        elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+            st.write("Image Data: ", uploaded_file.name)
+        
         else:
-            # Save the uploaded file temporarily for further processing
-            temp_file_path = os.path.join("temp", uploaded_file.name)
-            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
-            with open(temp_file_path, "wb") as f:
-                f.write(uploaded_file.read())
-            
-            st.write(f"File saved at: {temp_file_path}")
-            if uploaded_file.name.lower().endswith(('.jpg', '.jpeg', '.png')):
-                st.write(f"Image Data: {uploaded_file.name}")
-            else:
-                st.write("File uploaded successfully but not recognized as a CSV or image.")
+            st.write("File uploaded successfully but not recognized as a CSV or image.")
 
     else:
         st.error("Please upload a valid file.")
