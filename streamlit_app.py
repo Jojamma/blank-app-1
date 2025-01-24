@@ -13,11 +13,12 @@ def check_credentials(username, password):
 
 # Function to log results to a file
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
-    log_entry = f"{datetime.datetime.now()}, Model Type: {model_type}, Core Option: {core_option}, Uploaded File: {uploaded_file_name}, Dataset Size: {dataset_size}\n"
+    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {core_option}\n"
     
     # Create log file if it doesn't exist
     if not os.path.exists("upload_log.txt"):
         with open("upload_log.txt", "w") as log_file:
+            log_file.write("Timestamp, Dataset Name, Dataset Size, Core Option\n")  # Header
             log_file.write(log_entry)
         print("Created upload_log.txt and added the first entry.")
     else:
@@ -29,10 +30,10 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
 def read_logs():
     try:
         # Read logs from the file into a DataFrame
-        logs = pd.read_csv("upload_log.txt", sep=",", header=None, names=["Timestamp", "Model Type", "Core Option", "Uploaded File", "Dataset Size"])
+        logs = pd.read_csv("upload_log.txt", sep=",")
         return logs
     except FileNotFoundError:
-        return pd.DataFrame(columns=["Timestamp", "Model Type", "Core Option", "Uploaded File", "Dataset Size"])
+        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
 
 # Initialize session states if they don't exist
 if 'logged_in' not in st.session_state:
@@ -89,11 +90,9 @@ else:
                     try:
                         # Read and process CSV in chunks to avoid memory issues
                         chunk_size = 10 ** 6  # Adjust chunk size as needed
-                        column_names = None
 
                         for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                            if column_names is None:
-                                column_names = chunk.columns.tolist()  # Get column names from first chunk
+                            pass  # Process each chunk as needed
 
                     except Exception as e:
                         st.error(f"Error reading CSV file: {e}")
