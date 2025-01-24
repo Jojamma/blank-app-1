@@ -45,7 +45,7 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            # Use st.rerun() instead of st.experimental_rerun()
+            # Use st.rerun() to refresh the app state
             st.rerun()
         else:
             st.error("Invalid username or password.")
@@ -80,45 +80,50 @@ else:
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
         # Button to process the uploaded file
-        if uploaded_file and st.button("Run"):
-            if uploaded_file.name.endswith('.csv'):
-                try:
-                    # Read and process CSV in chunks to avoid memory issues
-                    st.write("Processing CSV file...")
-                    chunk_size = 10 ** 6  # Adjust chunk size as needed
-                    column_names = None
+        run_button_clicked = st.button("Run")
 
-                    for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                        if column_names is None:
-                            column_names = chunk.columns.tolist()  # Get column names from the first chunk
-                        st.write(f"Processed a chunk with {len(chunk)} rows.")
-
-                    # Display column names after processing all chunks
-                    st.write("CSV Column Names:", column_names)
-
-                except Exception as e:
-                    st.error(f"Error reading CSV file: {e}")
-
-            elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                st.write("Image Data: ", uploaded_file.name)
-
+        if run_button_clicked:
+            if uploaded_file is None:
+                # Display an error message if no file is uploaded after clicking Run
+                st.error("Please upload a valid file before running.")
+                # Set session state flag when Run button is clicked but no file is uploaded
+                st.session_state.run_clicked = False
             else:
-                st.write("File uploaded successfully but not recognized as a CSV or image.")
+                # Process the uploaded file only after clicking Run and uploading a file
+                if uploaded_file.name.endswith('.csv'):
+                    try:
+                        # Read and process CSV in chunks to avoid memory issues
+                        st.write("Processing CSV file...")
+                        chunk_size = 10 ** 6  # Adjust chunk size as needed
+                        column_names = None
 
-            # Set session state flag when Run button is clicked
-            st.session_state.run_clicked = True
+                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+                            if column_names is None:
+                                column_names = chunk.columns.tolist()  # Get column names from the first chunk
+                            st.write(f"Processed a chunk with {len(chunk)} rows.")
 
-        elif not uploaded_file:
-            st.error("Please upload a valid file.")
+                        # Display column names after processing all chunks
+                        st.write("CSV Column Names:", column_names)
 
-        # Display selected model type and core option
-        if uploaded_file:
+                    except Exception as e:
+                        st.error(f"Error reading CSV file: {e}")
+
+                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+                    st.write("Image Data: ", uploaded_file.name)
+
+                else:
+                    st.write("File uploaded successfully but not recognized as a CSV or image.")
+
+                # Set session state flag when Run button is clicked and file is processed successfully
+                st.session_state.run_clicked = True
+
+        # Display selected model type and core option only after Run button is clicked and file is uploaded
+        if uploaded_file and run_button_clicked and st.session_state.run_clicked:
             st.write(f"Model Type: {model_type}")
             st.write(f"Core Option: {core_option}")
 
-        # Conditionally display Log Results button only after Run is clicked
-        if uploaded_file and st.session_state.run_clicked:
-            if st.button("Log Results"):
-                log_results(model_type, core_option, uploaded_file.name)
-                st.success("Results logged successfully!")  # Corrected line
-
+            # Conditionally display Log Results button only after Run is clicked and file is processed successfully
+            if uploaded_file and run_button_clicked:
+                if st.button("Log Results"):
+                    log_results(model_type, core_option, uploaded_file.name)
+                    st.success("Results logged successfully!")
