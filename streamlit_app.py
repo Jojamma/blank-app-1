@@ -15,7 +15,7 @@ def check_credentials(username, password):
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     log_entry = f"{datetime.datetime.now()}, Model Type: {model_type}, Core Option: {core_option}, Uploaded File: {uploaded_file_name}, Dataset Size: {dataset_size}\n"
     
-    # Create log file if it doesn't exist and print a message
+    # Create log file if it doesn't exist
     if not os.path.exists("upload_log.txt"):
         with open("upload_log.txt", "w") as log_file:
             log_file.write(log_entry)
@@ -52,71 +52,11 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
             # Use st.rerun() to refresh the app state
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
-    # Main app content after login
-    st.title("Large File Uploader")
-
-    # File uploader for dataset
-    uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
-
-    # Dropdown for model type selection
-    model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN"])
-
-    # Dropdown for core options selection
-    core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
-
-    # Button to process the uploaded file
-    run_button_clicked = st.button("Run")
-
-    if run_button_clicked:
-        if uploaded_file is None:
-            # Display an error message if no file is uploaded after clicking Run
-            st.error("Please upload a valid file before running.")
-        else:
-            # Process the uploaded file only after clicking Run and uploading a file
-            dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
-
-            if uploaded_file.name.endswith('.csv'):
-                try:
-                    # Read and process CSV in chunks to avoid memory issues
-                    st.write("Processing CSV file...")
-                    chunk_size = 10 ** 6  # Adjust chunk size as needed
-                    column_names = None
-
-                    for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                        if column_names is None:
-                            column_names = chunk.columns.tolist()  # Get column names from the first chunk
-                        st.write(f"Processed a chunk with {len(chunk)} rows.")
-
-                    # Display column names after processing all chunks
-                    st.write("CSV Column Names:", column_names)
-
-                except Exception as e:
-                    st.error(f"Error reading CSV file: {e}")
-
-            elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                st.write("Image Data: ", uploaded_file.name)
-
-            else:
-                st.write("File uploaded successfully but not recognized as a CSV or image.")
-
-            # Log results after processing successfully
-            log_results(model_type, core_option, uploaded_file.name, dataset_size)
-
-            # Display selected model type and core option only after Run button is clicked and file is uploaded
-            if uploaded_file and run_button_clicked:
-                st.write(f"Model Type: {model_type}")
-                st.write(f"Core Option: {core_option}")
-
-                # Button to navigate to the report page
-                if st.button("View Report"):
-                    st.session_state.show_report_page = True  # Set flag for report page display
-                    st.experimental_rerun()  # Rerun the app to show the report page
-    
-    # Check if we need to show the report page after processing files
+    # Check if we need to show the report page
     if st.session_state.show_report_page:
         # Report Page Logic
         st.title("Report Page")
@@ -130,6 +70,62 @@ else:
         
         # Button to return to the main uploader page
         if st.button("Back to Uploader"):
-            st.session_state.show_report_page = False  # Reset flag for main page
-            # Force rerun to go back to main page
+            # Reset flag for main page and rerun
+            st.session_state.show_report_page = False  
             st.experimental_rerun()
+    else:
+        # Main app content after login
+        st.title("Large File Uploader")
+
+        # File uploader for dataset
+        uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
+
+        # Dropdown for model type selection
+        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN"])
+
+        # Dropdown for core options selection
+        core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
+
+        # Button to process the uploaded file
+        run_button_clicked = st.button("Run")
+
+        if run_button_clicked:
+            if uploaded_file is None:
+                # Display an error message if no file is uploaded after clicking Run
+                st.error("Please upload a valid file before running.")
+            else:
+                # Process the uploaded file only after clicking Run and uploading a file
+                dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
+
+                if uploaded_file.name.endswith('.csv'):
+                    try:
+                        # Read and process CSV in chunks to avoid memory issues
+                        chunk_size = 10 ** 6  # Adjust chunk size as needed
+                        column_names = None
+
+                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+                            if column_names is None:
+                                column_names = chunk.columns.tolist()  # Get column names from first chunk
+
+                    except Exception as e:
+                        st.error(f"Error reading CSV file: {e}")
+
+                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+                    pass  # Handle image files here
+
+                else:
+                    pass  # Handle other unsupported file types here
+
+                # Log results after processing successfully
+                log_results(model_type, core_option, uploaded_file.name, dataset_size)
+
+                # Display selected model type and core option only after Run button is clicked and file is uploaded
+                if uploaded_file and run_button_clicked:
+                    st.write(f"Model Type: {model_type}")
+                    st.write(f"Core Option: {core_option}")
+
+                    # Button to navigate to the report page
+                    if st.button("View Report"):
+                        print("Navigating to report page...")
+                        st.session_state.show_report_page = True  
+                        st.experimental_rerun()
