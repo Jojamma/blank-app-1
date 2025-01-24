@@ -18,8 +18,8 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     gpu_usage = 1 if core_option == "GPU" else 0
     hdfs_usage = 1 if core_option == "HDFS" else 0
 
-    # Create a log entry
-    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {model_type}, {cpu_usage}, {gpu_usage}, {hdfs_usage}\n"
+    # Create a log entry (consistent format with no extra commas)
+    log_entry = f'"{datetime.datetime.now()}", "{uploaded_file_name}", "{dataset_size}", "{model_type}", {cpu_usage}, {gpu_usage}, {hdfs_usage}\n'
 
     try:
         # Create log file if it doesn't exist
@@ -40,7 +40,8 @@ def read_logs():
             st.write("Log file not found!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
         
-        logs = pd.read_csv("upload_log.txt")
+        # Read logs and skip bad lines if any
+        logs = pd.read_csv("upload_log.txt", on_bad_lines='skip')  # Skip problematic lines
         
         if logs.empty:
             st.write("Log file is empty!")
