@@ -5,7 +5,7 @@ import os
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
-PASSWORD = "Jogu@2003"
+PASSWORD = "password"
 
 # Function to check credentials
 def check_credentials(username, password):
@@ -38,8 +38,8 @@ def read_logs():
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-if 'show_report_page' not in st.session_state:
-    st.session_state.show_report_page = False
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "Uploader"
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -51,29 +51,18 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-
+            # Use st.rerun() to refresh the app state
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
-    # Check if we need to show the report page
-    if st.session_state.show_report_page:
-        # Report Page Logic
-        st.title("Report Page")
-        logs = read_logs()
-        
-        if not logs.empty:
-            st.dataframe(logs)
-            print("Displayed log table with entries.")
-        else:
-            st.write("No logs available.")
-        
-        # Button to return to the main uploader page
-        if st.button("Back to Uploader"):
-            # Reset flag for main page and rerun
-            st.session_state.show_report_page = False  
-            st.experimental_rerun()
-    else:
-        # Main app content after login
+    # Sidebar navigation menu
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to:", ["Uploader", "Dashboard"])
+    st.session_state.current_page = page
+
+    if st.session_state.current_page == "Uploader":
+        # Main app content for uploading files
         st.title("Large File Uploader")
 
         # File uploader for dataset
@@ -122,8 +111,26 @@ else:
                 if uploaded_file and run_button_clicked:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
-                # Button to navigate to the report page
-                if st.button("View Report"):
-                    st.session_state.show_report_page = True  # Set flag for report page display
-                    st.rerun()  # Rerun the app to show the report page
 
+    elif st.session_state.current_page == "Dashboard":
+        # Dashboard Page Logic
+        st.title("Dashboard")
+
+        logs = read_logs()
+
+        if logs.empty:
+            st.write("No data available.")
+        else:
+            # Display key metrics
+            total_files_processed = len(logs)
+            total_dataset_size = logs["Dataset Size"].sum()
+            most_used_model_type = logs["Model Type"].mode()[0] if not logs["Model Type"].empty else "N/A"
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Total Files Processed", total_files_processed)
+            col2.metric("Total Dataset Size (bytes)", total_dataset_size)
+            col3.metric("Most Used Model Type", most_used_model_type)
+
+            # Visualization: Bar chart of model usage counts
+            model_usage_counts = logs["Model Type"].value_counts()
+            st.bar_chart(model_usage_counts)
