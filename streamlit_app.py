@@ -73,7 +73,7 @@ if not st.session_state.logged_in:
 else:
     # Sidebar navigation menu
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to:", ["Uploader", "Dashboard"])
+    page = st.sidebar.radio("Go to:", ["Uploader", "Log Results"])  # Changed from "Dashboard" to "Log Results"
     st.session_state.current_page = page
 
     if st.session_state.current_page == "Uploader":
@@ -83,10 +83,10 @@ else:
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
         # Dropdown for model type selection
-        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN","ANN"])
+        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN"])
 
         # Dropdown for core options selection
-        core_option = st.selectbox("Select", ["CPU", "GPU", "HDFS"])
+        core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
         # Button to process the uploaded file
         run_button_clicked = st.button("Run")
@@ -124,14 +124,14 @@ else:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
 
-    elif st.session_state.current_page == "Dashboard":
-        # Dashboard Page Logic
-        st.title("Dashboard")
+    elif st.session_state.current_page == "Log Results":  # Updated title here
+        # Log Results Page Logic
+        st.title("Log Results")  # Updated title here
 
         logs = read_logs()
 
         if not logs.empty:
-            # Display log table on the dashboard
+            # Display log table on the Log Results page
             st.subheader("Log Table")
             st.dataframe(logs)
             print("Displayed log table with entries.")
