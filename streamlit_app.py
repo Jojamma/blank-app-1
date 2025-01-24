@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import datetime
-
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
 PASSWORD = "password"
