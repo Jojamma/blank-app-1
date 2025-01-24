@@ -32,6 +32,9 @@ if 'logged_in' not in st.session_state:
 if 'show_log_page' not in st.session_state:
     st.session_state.show_log_page = False
 
+if 'run_clicked' not in st.session_state:
+    st.session_state.run_clicked = False
+
 # Login page logic
 if not st.session_state.logged_in:
     st.title("Login Page")
@@ -43,7 +46,7 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
             # Force rerun to show the main app page
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -62,7 +65,7 @@ else:
         if st.button("Back to Main"):
             st.session_state.show_log_page = False
             # Force rerun to go back to main page
-            st.rerun()
+            st.experimental_rerun()
     else:
         # Main app content after login
         st.title("Large File Uploader")
@@ -77,45 +80,44 @@ else:
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
         # Button to process the uploaded file
-        if st.button("Run"):
-            if uploaded_file is not None:
-                # Check if the uploaded file is a CSV
-                if uploaded_file.name.endswith('.csv'):
-                    try:
-                        # Read and process CSV in chunks to avoid memory issues
-                        st.write("Processing CSV file...")
-                        chunk_size = 10 ** 6  # Adjust chunk size as needed
-                        column_names = None
+        if uploaded_file and st.button("Run"):
+            if uploaded_file.name.endswith('.csv'):
+                try:
+                    # Read and process CSV in chunks to avoid memory issues
+                    st.write("Processing CSV file...")
+                    chunk_size = 10 ** 6  # Adjust chunk size as needed
+                    column_names = None
 
-                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                            if column_names is None:
-                                column_names = chunk.columns.tolist()  # Get column names from the first chunk
-                            st.write(f"Processed a chunk with {len(chunk)} rows.")
+                    for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+                        if column_names is None:
+                            column_names = chunk.columns.tolist()  # Get column names from the first chunk
+                        st.write(f"Processed a chunk with {len(chunk)} rows.")
 
-                        # Display column names after processing all chunks
-                        st.write("CSV Column Names:", column_names)
+                    # Display column names after processing all chunks
+                    st.write("CSV Column Names:", column_names)
 
-                    except Exception as e:
-                        st.error(f"Error reading CSV file: {e}")
+                except Exception as e:
+                    st.error(f"Error reading CSV file: {e}")
 
-                # Check if it's an image or other file types
-                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                    st.write("Image Data: ", uploaded_file.name)
-
-                else:
-                    st.write("File uploaded successfully but not recognized as a CSV or image.")
+            elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+                st.write("Image Data: ", uploaded_file.name)
 
             else:
-                st.error("Please upload a valid file.")
+                st.write("File uploaded successfully but not recognized as a CSV or image.")
 
-            # Display selected model type and core option
+            # Set session state flag when Run button is clicked
+            st.session_state.run_clicked = True
+
+        elif not uploaded_file:
+            st.error("Please upload a valid file.")
+
+        # Display selected model type and core option
+        if uploaded_file:
             st.write(f"Model Type: {model_type}")
             st.write(f"Core Option: {core_option}")
 
-        # Log button to save results to a file and navigate to log page
-        if uploaded_file and st.button("Log Results"):
-            log_results(model_type, core_option, uploaded_file.name)
-            st.success("Results logged successfully!")
-            # Navigate to log page by setting session state variable and rerunning app
-            st.session_state.show_log_page = True
-            st.rerun()
+        # Conditionally display Log Results button only after Run is clicked
+        if uploaded_file and st.session_state.run_clicked:
+            if st.button("Log Results"):
+                log_results(model_type, core_option, uploaded_file.name)
+                st.success("Results logg
