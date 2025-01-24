@@ -39,6 +39,11 @@ def read_logs():
         
         # Read logs into a DataFrame
         logs = pd.read_csv("upload_log.txt")
+        
+        if logs.empty:
+            print("Log file is empty.")
+            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
+        
         return logs
     
     except pd.errors.EmptyDataError:
@@ -66,42 +71,32 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            # Use st.rerun() to refresh the app state
             st.rerun()
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar navigation menu
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to:", ["Uploader", "Log Results"])  # Changed from "Dashboard" to "Log Results"
+    page = st.sidebar.radio("Go to:", ["Uploader", "Log Results"])
     st.session_state.current_page = page
 
     if st.session_state.current_page == "Uploader":
-        # File uploader for dataset (removed the title here)
-        
         # File uploader for dataset
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
-        # Dropdown for model type selection
         model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-
-        # Dropdown for core options selection
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
-        # Button to process the uploaded file
         run_button_clicked = st.button("Run")
 
         if run_button_clicked:
             if uploaded_file is None:
-                # Display an error message if no file is uploaded after clicking Run
                 st.error("Please upload a valid file before running.")
             else:
-                # Process the uploaded file only after clicking Run and uploading a file
-                dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
+                dataset_size = uploaded_file.size
 
                 if uploaded_file.name.endswith('.csv'):
                     try:
-                        # Read and process CSV in chunks to avoid memory issues
                         chunk_size = 10 ** 6  # Adjust chunk size as needed
 
                         for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
@@ -124,9 +119,9 @@ else:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
 
-    elif st.session_state.current_page == "Log Results":  # Updated title here
+    elif st.session_state.current_page == "Log Results":
         # Log Results Page Logic
-        st.title("Log Results")  # Updated title here
+        st.title("Log Results")
 
         logs = read_logs()
 
