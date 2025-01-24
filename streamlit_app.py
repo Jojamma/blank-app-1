@@ -43,7 +43,7 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
             # Force rerun to show the main app page
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -62,7 +62,7 @@ else:
         if st.button("Back to Main"):
             st.session_state.show_log_page = False
             # Force rerun to go back to main page
-            st.experimental_rerun()
+            st.rerun()
     else:
         # Main app content after login
         st.title("Large File Uploader")
@@ -118,4 +118,4 @@ else:
             st.success("Results logged successfully!")
             # Navigate to log page by setting session state variable and rerunning app
             st.session_state.show_log_page = True
-            st.experimental_rerun()
+            st.rerun()
