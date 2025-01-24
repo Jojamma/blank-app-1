@@ -127,3 +127,6 @@ else:
                 if st.button("Log Results"):
                     log_results(model_type, core_option, uploaded_file.name)
                     st.success("Results logged successfully!")
+                    # Navigate to log page by setting session state variable and rerunning app
+                    st.session_state.show_log_page = True
+                    st.rerun()
