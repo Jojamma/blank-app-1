@@ -127,6 +127,8 @@ else:
                 if st.button("Log Results"):
                     log_results(model_type, core_option, uploaded_file.name)
                     st.success("Results logged successfully!")
-                    # Navigate to log page by setting session state variable and rerunning app
+                    # Navigate to log page by setting session state variable without rerunning the app immediately.
                     st.session_state.show_log_page = True  # Set flag for log page display
-                    st.rerun()
+                    
+                    # Instead of rerunning here, we will let Streamlit render the new state automatically.
+
