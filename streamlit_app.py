@@ -65,6 +65,10 @@ if 'logged_in' not in st.session_state:
 if 'current_page' not in st.session_state:
     st.session_state.current_page = ""
 
+# Logic to refresh the page after file upload
+def refresh_page():
+    st.session_state.current_page = "Uploader" if st.session_state.current_page == "Log Results" else "Log Results"
+
 # Login page logic
 if not st.session_state.logged_in:
     st.title("Login Page")
@@ -115,8 +119,8 @@ else:
                     # Log results after processing successfully
                     log_results(model_type, core_option, uploaded_file.name, dataset_size)
 
-                    # Force a rerun to refresh the page and read the log file again
-                    st.experimental_rerun()
+                    # Refresh the page to update logs
+                    refresh_page()
 
                     # Display selected model type and core option only after Run button is clicked and file is uploaded
                     st.write(f"Model Type: {model_type}")
@@ -129,7 +133,7 @@ else:
         # Log Results Page Logic
         st.title("Log Results")
 
-        # Re-read logs from the file and force a fresh reload
+        # Re-read logs from the file
         logs = read_logs()
 
         if not logs.empty:
