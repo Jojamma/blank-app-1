@@ -112,7 +112,7 @@ else:
                     pass  # Handle image files here
 
                 else:
-                    pass  # Handle other unsupported file types here
+                    st.error("Unsupported file type. Please upload a CSV or image file.")
 
                 # Log results after processing successfully
                 log_results(model_type, core_option, uploaded_file.name, dataset_size)
@@ -126,7 +126,7 @@ else:
                     if st.button("View Dashboard"):
                         print("Navigating to dashboard...")
                         st.session_state.current_page = "Dashboard"  # Set flag for dashboard display
-                        st.rerun()  # Use rerin instead of experimental rerun
+                        st.rerun()  # Use rerun instead of experimental rerun
 
     elif st.session_state.current_page == "Dashboard":
         # Dashboard Page Logic
