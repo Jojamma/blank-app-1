@@ -1,7 +1,22 @@
 import streamlit as st
 import pandas as pd
 import os
-import xlsxwriter
+import subprocess
+import sys
+
+# Function to install XlsxWriter dynamically
+def install_xlsxwriter():
+    try:
+        import xlsxwriter  # Check if XlsxWriter is already installed
+    except ImportError:
+        # If not installed, install it using pip
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "XlsxWriter"])
+        import xlsxwriter  # Import again after installation
+
+# Ensure XlsxWriter is installed before proceeding
+install_xlsxwriter()
+
+import xlsxwriter  # Now safely import XlsxWriter
 
 # Title of the app
 st.title("Large File Uploader with Excel Logging")
