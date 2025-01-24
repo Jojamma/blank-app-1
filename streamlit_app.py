@@ -77,3 +77,9 @@ else:
         if uploaded_file and run_button_clicked:
             st.write(f"Model Type: {model_type}")
             st.write(f"Core Option: {core_option}")
+
+            # New button at the end of the output section
+            if st.button("Perform Another Action"):
+                # Placeholder for another action; replace with your desired functionality.
+                st.success("You can implement your desired action here!")
+
