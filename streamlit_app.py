@@ -120,4 +120,5 @@ else:
         if uploaded_file and st.session_state.run_clicked:
             if st.button("Log Results"):
                 log_results(model_type, core_option, uploaded_file.name)
-                st.success("Results logg
+                st.success("Results logged successfully!")  # Corrected line
+
