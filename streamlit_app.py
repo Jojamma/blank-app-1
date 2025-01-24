@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import datetime
 import os
@@ -141,4 +141,3 @@ else:
             print("Displayed log table with entries.")
         else:
             st.write("No logs available.")
-
