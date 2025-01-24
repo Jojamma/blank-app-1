@@ -51,7 +51,7 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            # Use st.rerun() to refresh the app state
+            # Use st.experimental_rerun() to refresh the app state
             st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
@@ -118,19 +118,11 @@ else:
 
         logs = read_logs()
 
-        if logs.empty:
-            st.write("No data available.")
+        if not logs.empty:
+            # Display log table on the dashboard
+            st.subheader("Log Table")
+            st.dataframe(logs)
+            print("Displayed log table with entries.")
         else:
-            # Display key metrics
-            total_files_processed = len(logs)
-            total_dataset_size = logs["Dataset Size"].sum()
-            most_used_model_type = logs["Model Type"].mode()[0] if not logs["Model Type"].empty else "N/A"
+            st.write("No logs available.")
 
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Total Files Processed", total_files_processed)
-            col2.metric("Total Dataset Size (bytes)", total_dataset_size)
-            col3.metric("Most Used Model Type", most_used_model_type)
-
-            # Visualization: Bar chart of model usage counts
-            model_usage_counts = logs["Model Type"].value_counts()
-            st.bar_chart(model_usage_counts)
