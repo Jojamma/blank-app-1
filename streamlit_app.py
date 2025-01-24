@@ -33,12 +33,12 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
 def read_logs():
     try:
         # Check if the file exists and has content
-        if os.path.getsize("upload_log.txt") == 0:
-            print("Log file is empty.")
+        if not os.path.exists("upload_log.txt"):
+            print("Log file does not exist.")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
         
         # Read logs into a DataFrame
-        logs = pd.read_csv("upload_log.txt", sep=",")
+        logs = pd.read_csv("upload_log.txt")
         return logs
     
     except pd.errors.EmptyDataError:
