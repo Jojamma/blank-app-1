@@ -120,5 +120,5 @@ else:
                     # Button to navigate to the log page
                     if st.button("View Log"):
                         st.session_state.show_log_page = True  # Set flag for log page display
-                        st.experimental_rerun()  # Rerun the app to show the log page
+                        st.rerun()  # Rerun the app to show the log page
 
