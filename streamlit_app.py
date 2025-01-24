@@ -32,7 +32,12 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
                 log_file.write(log_entry)
 
         # Debugging: Confirm log entry is written
-        st.write(f"Log entry written: {log_entry}")  # Debug message
+        st.write(f"Log entry written: {log_entry}")  # Debug message to show what was written
+
+        # Check if the log file was updated properly
+        with open("upload_log.txt", "r") as file:
+            log_contents = file.readlines()
+            st.write(f"Log file contents after writing: {log_contents[-5:]}")  # Show last 5 lines for verification
 
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
@@ -126,7 +131,7 @@ else:
         # Log Results Page Logic
         st.title("Log Results")
 
-        # Re-read logs from the file and force a fresh reload
+        # Re-read logs from the file
         logs = read_logs()
 
         if not logs.empty:
