@@ -30,6 +30,7 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
         else:
             with open("upload_log.txt", "a") as log_file:
                 log_file.write(log_entry)
+
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
 
@@ -39,14 +40,14 @@ def read_logs():
         if not os.path.exists("upload_log.txt"):
             st.write("Log file not found!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
-        
+
         # Read logs and skip bad lines if any
         logs = pd.read_csv("upload_log.txt", on_bad_lines='skip')  # Skip problematic lines
         
         if logs.empty:
             st.write("Log file is empty!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
-        
+
         st.write(f"Logs found: {logs.shape[0]} rows.")  # Debug print to check number of rows in logs
         return logs
 
