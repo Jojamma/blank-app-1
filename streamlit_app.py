@@ -66,14 +66,19 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.experimental_rerun()
+            # Refresh the app by setting a flag in session state
+            st.session_state.current_page = "Uploader"  # Or set the page to whatever you want to reload
+            st.experimental_rerun()  # Optional: use this if you still want a "hard" rerun
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar navigation menu
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to:", ["Uploader", "Log Results"])
-    
+
+    # Set current page based on the sidebar selection
+    st.session_state.current_page = page
+
     if page == "Uploader":
         # File uploader for dataset
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
