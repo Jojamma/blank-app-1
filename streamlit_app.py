@@ -66,9 +66,8 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            # Refresh the app by setting a flag in session state
-            st.session_state.current_page = "Uploader"  # Or set the page to whatever you want to reload
-            st.experimental_rerun()  # Optional: use this if you still want a "hard" rerun
+            # Set the current page to "Uploader" after login
+            st.session_state.current_page = "Uploader"
         else:
             st.error("Invalid username or password.")
 else:
