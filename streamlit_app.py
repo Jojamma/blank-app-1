@@ -77,9 +77,3 @@ else:
         if uploaded_file and run_button_clicked:
             st.write(f"Model Type: {model_type}")
             st.write(f"Core Option: {core_option}")
-
-            # New button at the end of the output section that opens a new tab
-            if st.button("Open New Page"):
-                # Create an HTML link that opens in a new tab
-                new_page_url = "https://example.com"  # Replace with your desired URL or page path
-                st.markdown(f'<a href="{new_page_url}" target="_blank">Go to New Page</a>', unsafe_allow_html=True)
