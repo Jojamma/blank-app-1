@@ -125,12 +125,6 @@ else:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
 
-                    # Button to navigate to the dashboard page
-                    if st.button("View Dashboard"):
-                        print("Navigating to dashboard...")
-                        st.session_state.current_page = "Dashboard"  # Set flag for dashboard display
-                        st.rerun()  # Use rerun instead of experimental rerun
-
     elif st.session_state.current_page == "Dashboard":
         # Dashboard Page Logic
         st.title("Dashboard")
