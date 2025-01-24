@@ -5,7 +5,7 @@ import os
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
-PASSWORD = "password"
+PASSWORD = "Jogu@2003"
 
 # Function to check credentials
 def check_credentials(username, password):
