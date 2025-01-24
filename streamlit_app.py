@@ -4,7 +4,6 @@ import os
 
 # Title of the app
 st.title("Large File Uploader")
-
 # File uploader for dataset
 uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
