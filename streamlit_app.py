@@ -34,11 +34,6 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
         # Debugging: Confirm log entry is written
         st.write(f"Log entry written: {log_entry}")  # Debug message to show what was written
 
-        # Check if the log file was updated properly
-        with open("upload_log.txt", "r") as file:
-            log_contents = file.readlines()
-            st.write(f"Log file contents after writing: {log_contents[-5:]}")  # Show last 5 lines for verification
-
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
 
@@ -119,6 +114,9 @@ else:
 
                     # Log results after processing successfully
                     log_results(model_type, core_option, uploaded_file.name, dataset_size)
+
+                    # Force a rerun to refresh the page and read the log file again
+                    st.experimental_rerun()
 
                     # Display selected model type and core option only after Run button is clicked and file is uploaded
                     st.write(f"Model Type: {model_type}")
