@@ -51,8 +51,7 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            # Use st.rerun() to refresh the app state
-            st.experimental_rerun()
+
         else:
             st.error("Invalid username or password.")
 else:
