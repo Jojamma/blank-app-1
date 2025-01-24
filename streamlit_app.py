@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
@@ -8,6 +9,20 @@ PASSWORD = "password"
 # Function to check credentials
 def check_credentials(username, password):
     return username == USERNAME and password == PASSWORD
+
+# Function to log results to a file
+def log_results(model_type, core_option, uploaded_file_name):
+    log_entry = f"{datetime.datetime.now()}: Model Type: {model_type}, Core Option: {core_option}, Uploaded File: {uploaded_file_name}\n"
+    with open("upload_log.txt", "a") as log_file:
+        log_file.write(log_entry)
+
+# Function to read logs from the file
+def read_logs():
+    try:
+        logs = pd.read_csv("upload_log.txt", header=None, names=["Timestamp", "Details"])
+        return logs
+    except FileNotFoundError:
+        return pd.DataFrame(columns=["Timestamp", "Details"])
 
 # Login page
 if 'logged_in' not in st.session_state or not st.session_state.logged_in:
@@ -69,3 +84,24 @@ else:
         # Display selected model type and core option
         st.write(f"Model Type: {model_type}")
         st.write(f"Core Option: {core_option}")
+
+        # Log button to save results to a file and navigate to log page
+        if st.button("Log Results"):
+            log_results(model_type, core_option, uploaded_file.name)
+            st.success("Results logged successfully!")
+            # Navigate to log page by setting session state variable
+            st.session_state.show_log_page = True
+
+    # Check if we need to show the log page
+    if 'show_log_page' in st.session_state and st.session_state.show_log_page:
+        logs = read_logs()
+        if not logs.empty:
+            st.title("Log Table")
+            st.dataframe(logs)
+        else:
+            st.write("No logs available.")
+        
+        # Button to return to the main page
+        if st.button("Back to Main"):
+            st.session_state.show_log_page = False
+
