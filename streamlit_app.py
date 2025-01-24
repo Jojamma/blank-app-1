@@ -129,7 +129,7 @@ else:
         # Log Results Page Logic
         st.title("Log Results")
 
-        # Re-read logs from the file
+        # Re-read logs from the file and force a fresh reload
         logs = read_logs()
 
         if not logs.empty:
