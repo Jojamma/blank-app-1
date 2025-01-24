@@ -97,6 +97,23 @@ else:
                 # Process the uploaded file only after clicking Run and uploading a file
                 dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
 
+                if uploaded_file.name.endswith('.csv'):
+                    try:
+                        # Read and process CSV in chunks to avoid memory issues
+                        chunk_size = 10 ** 6  # Adjust chunk size as needed
+
+                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
+                            pass  # Process each chunk as needed
+
+                    except Exception as e:
+                        st.error(f"Error reading CSV file: {e}")
+
+                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+                    pass  # Handle image files here
+
+                else:
+                    pass  # Handle other unsupported file types here
+
                 # Log results after processing successfully
                 log_results(model_type, core_option, uploaded_file.name, dataset_size)
 
@@ -104,6 +121,12 @@ else:
                 if uploaded_file and run_button_clicked:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
+
+                    # Button to navigate to the dashboard page
+                    if st.button("View Dashboard"):
+                        print("Navigating to dashboard...")
+                        st.session_state.current_page = "Dashboard"  # Set flag for dashboard display
+                        st.experimental_rerun()  # Use experimental rerun for older versions
 
     elif st.session_state.current_page == "Dashboard":
         # Dashboard Page Logic
