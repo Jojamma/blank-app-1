@@ -13,46 +13,38 @@ def check_credentials(username, password):
 
 # Function to log results to a file
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
-    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {core_option}, {model_type}\n"
-    
+    # Set CPU, GPU, HDFS usage based on core option
+    cpu_usage = 1 if core_option == "CPU" else 0
+    gpu_usage = 1 if core_option == "GPU" else 0
+    hdfs_usage = 1 if core_option == "HDFS" else 0
+
+    # Create a log entry
+    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {model_type}, {cpu_usage}, {gpu_usage}, {hdfs_usage}\n"
+
     try:
         # Create log file if it doesn't exist
         if not os.path.exists("upload_log.txt"):
             with open("upload_log.txt", "w") as log_file:
-                log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option,Model Used\n")  # Header
+                log_file.write("Timestamp,Dataset Name,Dataset Size,Model Used,CPU,GPU,HDFS\n")  # Header row
                 log_file.write(log_entry)
-            print(f"Log file created and first entry added: {log_entry.strip()}")
         else:
             with open("upload_log.txt", "a") as log_file:
                 log_file.write(log_entry)
-            print(f"Log entry appended: {log_entry.strip()}")
     except Exception as e:
         print(f"Error writing to log file: {e}")
 
 # Function to read logs from the file
 def read_logs():
     try:
-        # Check if the file exists and has content
         if not os.path.exists("upload_log.txt"):
-            print("Log file does not exist.")
-            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
+            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
         
-        # Read logs into a DataFrame
         logs = pd.read_csv("upload_log.txt")
-        
-        if logs.empty:
-            print("Log file is empty.")
-            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
-        
         return logs
-    
-    except pd.errors.EmptyDataError:
-        print("Log file is empty.")
-        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
-    
-    except pd.errors.ParserError as e:
-        print(f"Error parsing log file: {e}")
-        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
+
+    except Exception as e:
+        print(f"Error reading logs: {e}")
+        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
 
 # Initialize session states if they don't exist
 if 'logged_in' not in st.session_state:
@@ -71,7 +63,7 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -91,9 +83,10 @@ else:
 
         if run_button_clicked:
             if uploaded_file is None:
+                # Display an error message if no file is uploaded after clicking Run
                 st.error("Please upload a valid file before running.")
             else:
-                dataset_size = uploaded_file.size
+                dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
 
                 if uploaded_file.name.endswith('.csv'):
                     try:
@@ -128,7 +121,6 @@ else:
         if not logs.empty:
             # Display log table on the Log Results page
             st.subheader("Log Table")
-            st.dataframe(logs)
-            print("Displayed log table with entries.")
+            st.dataframe(logs)  # Displaying the DataFrame as an interactive table in Streamlit
         else:
             st.write("No logs available.")
