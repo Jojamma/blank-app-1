@@ -5,8 +5,8 @@ import os
 # Title of the app
 st.title("Model Runner")
 
-# File uploader for dataset
-uploaded_file = st.file_uploader("Upload your dataset (CSV or image files)", type=['csv', 'jpg', 'jpeg', 'png'])
+# File uploader for dataset with no size restriction
+uploaded_file = st.file_uploader("Upload your dataset (CSV or image files)", type=['csv', 'jpg', 'jpeg', 'png'], accept_multiple_files=False)
 
 # Dropdown for model type selection
 model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN"])
