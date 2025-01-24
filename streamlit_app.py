@@ -40,6 +40,10 @@ def read_logs():
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
         
         logs = pd.read_csv("upload_log.txt")
+        
+        if logs.empty:
+            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
+        
         return logs
 
     except Exception as e:
@@ -51,7 +55,7 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = "Uploader"
+    st.session_state.current_page = ""
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -62,19 +66,17 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.success("Logged in successfully!")
-            st.rerun()  # Use rerun for refreshing the app state after login
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar navigation menu
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to:", ["Uploader", "Log Results"])
-    st.session_state.current_page = page
-
-    if st.session_state.current_page == "Uploader":
+    
+    if page == "Uploader":
         # File uploader for dataset
-        uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
+        uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
 
         model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
@@ -88,31 +90,27 @@ else:
             else:
                 dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
 
-                if uploaded_file.name.endswith('.csv'):
-                    try:
-                        chunk_size = 10 ** 6  # Adjust chunk size as needed
+                try:
+                    # Display column names for CSV files
+                    if uploaded_file.name.endswith('.csv'):
+                        df = pd.read_csv(uploaded_file)
+                        st.write(f"Uploaded Dataset Columns: {list(df.columns)}")
+                    elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
+                        st.write("Image files do not have columns.")
+                    else:
+                        st.error("Unsupported file type. Please upload a CSV or image file.")
 
-                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                            pass  # Process each chunk as needed
+                    # Log results after processing successfully
+                    log_results(model_type, core_option, uploaded_file.name, dataset_size)
 
-                    except Exception as e:
-                        st.error(f"Error reading CSV file: {e}")
-
-                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                    pass  # Handle image files here
-
-                else:
-                    st.error("Unsupported file type. Please upload a CSV or image file.")
-
-                # Log results after processing successfully
-                log_results(model_type, core_option, uploaded_file.name, dataset_size)
-
-                # Display selected model type and core option only after Run button is clicked and file is uploaded
-                if uploaded_file and run_button_clicked:
+                    # Display selected model type and core option only after Run button is clicked and file is uploaded
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
 
-    elif st.session_state.current_page == "Log Results":
+                except Exception as e:
+                    st.error(f"Error processing the uploaded file: {e}")
+
+    elif page == "Log Results":
         # Log Results Page Logic
         st.title("Log Results")
 
