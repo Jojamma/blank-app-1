@@ -123,9 +123,8 @@ else:
                 if uploaded_file and run_button_clicked:
                     st.write(f"Model Type: {model_type}")
                     st.write(f"Core Option: {core_option}")
+                # Button to navigate to the report page
+                if st.button("View Report"):
+                    st.session_state.show_report_page = True  # Set flag for report page display
+                    st.rerun()  # Rerun the app to show the report page
 
-                    # Button to navigate to the report page
-                    if st.button("View Report"):
-                        print("Navigating to report page...")
-                        st.session_state.show_report_page = True  
-                        st.experimental_rerun()
