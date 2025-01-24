@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 import os
-import xlsxwriter  # Import XlsxWriter directly after ensuring it's installed
 
 # Title of the app
-st.title("Large File Uploader with Excel Logging")
+st.title("Large File Uploader")
 
 # File uploader for dataset
 uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
@@ -24,15 +23,14 @@ if st.button("Run"):
                 # Read and process CSV in chunks to avoid memory issues
                 st.write("Processing CSV file...")
                 chunk_size = 10 ** 6  # Adjust chunk size as needed
-                
-                total_rows = 0
+                column_names = None
                 
                 for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                    total_rows += len(chunk)
+                    if column_names is None:
+                        column_names = chunk.columns.tolist()  # Get column names from the first chunk
+                    st.write(f"Processed a chunk with {len(chunk)} rows.")
                 
                 # Display column names after processing all chunks
-                df = pd.read_csv(uploaded_file)
-                column_names = df.columns.tolist()
                 st.write("CSV Column Names:", column_names)
                 
             except Exception as e:
@@ -45,33 +43,10 @@ if st.button("Run"):
         else:
             st.write("File uploaded successfully but not recognized as a CSV or image.")
 
-        # Get dataset size in MB
-        dataset_size_mb = round(os.path.getsize(uploaded_file.name) / (1024 * 1024), 2)
-
-        # Display selected model type and core option
-        st.write(f"Model Type: {model_type}")
-        st.write(f"Core Option: {core_option}")
-
-        # Create an Excel file with dataset size and model name
-        excel_file_path = "log.xlsx"
-        
-        # Create a new Excel workbook and add data using XlsxWriter
-        with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
-            df_log = pd.DataFrame({
-                "Date": [pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")],
-                "Dataset Size (MB)": [dataset_size_mb],
-                "Model Name": [model_type]
-            })
-            df_log.to_excel(writer, sheet_name='Log', index=False)
-
-        # Provide a download link for the Excel file
-        with open(excel_file_path, "rb") as f:
-            st.download_button(
-                label="Download Log Excel File",
-                data=f,
-                file_name="log.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
     else:
         st.error("Please upload a valid file.")
+
+    # Display selected model type and core option
+    st.write(f"Model Type: {model_type}")
+    st.write(f"Core Option: {core_option}")
+
