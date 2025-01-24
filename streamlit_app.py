@@ -31,6 +31,9 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
             with open("upload_log.txt", "a") as log_file:
                 log_file.write(log_entry)
 
+        # Debugging: Confirm log entry is written
+        st.write(f"Log entry written: {log_entry}")  # Debug message
+
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
 
