@@ -8,7 +8,6 @@ import pickle
 file_path = Path(__file__).parent / "hashed_pw.pkl"
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
-
 # Define users
 names = ["User1", "User2"]
 usernames = ["user1", "user2"]
