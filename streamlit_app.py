@@ -42,7 +42,7 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
 
-# Function to read logs from the file
+# Function to read logs from the file (no caching for fresh data)
 def read_logs():
     try:
         if not os.path.exists("upload_log.txt"):
