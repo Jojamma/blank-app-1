@@ -63,8 +63,8 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            # Use st.experimental_rerun() to refresh the app state
-            st.experimental_rerun()
+            # Use st.rerun() to refresh the app state
+            st.rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -126,7 +126,7 @@ else:
                     if st.button("View Dashboard"):
                         print("Navigating to dashboard...")
                         st.session_state.current_page = "Dashboard"  # Set flag for dashboard display
-                        st.experimental_rerun()  # Use experimental rerun for older versions
+                        st.rerun()  # Use rerin instead of experimental rerun
 
     elif st.session_state.current_page == "Dashboard":
         # Dashboard Page Logic
