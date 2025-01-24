@@ -13,13 +13,13 @@ def check_credentials(username, password):
 
 # Function to log results to a file
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
-    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {core_option}\n"
+    log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {core_option}, {model_type}\n"
     
     try:
         # Create log file if it doesn't exist
         if not os.path.exists("upload_log.txt"):
             with open("upload_log.txt", "w") as log_file:
-                log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option\n")  # Header
+                log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option,Model Used\n")  # Header
                 log_file.write(log_entry)
             print(f"Log file created and first entry added: {log_entry.strip()}")
         else:
@@ -35,7 +35,7 @@ def read_logs():
         # Check if the file exists and has content
         if not os.path.exists("upload_log.txt"):
             print("Log file does not exist.")
-            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
+            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
         
         # Read logs into a DataFrame
         logs = pd.read_csv("upload_log.txt")
@@ -43,11 +43,11 @@ def read_logs():
     
     except pd.errors.EmptyDataError:
         print("Log file is empty.")
-        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
+        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
     
     except pd.errors.ParserError as e:
         print(f"Error parsing log file: {e}")
-        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
+        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option", "Model Used"])
 
 # Initialize session states if they don't exist
 if 'logged_in' not in st.session_state:
@@ -83,7 +83,7 @@ else:
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
         # Dropdown for model type selection
-        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN","ANN"])
+        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
 
         # Dropdown for core options selection
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
