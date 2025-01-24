@@ -83,7 +83,7 @@ else:
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
         # Dropdown for model type selection
-        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN"])
+        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN","ANN"])
 
         # Dropdown for core options selection
         core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
