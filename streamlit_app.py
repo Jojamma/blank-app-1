@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
 PASSWORD = "password"
@@ -76,9 +77,8 @@ else:
     st.session_state.current_page = page
 
     if st.session_state.current_page == "Uploader":
-        # Main app content for uploading files
-        st.title("Large File Uploader")
-
+        # File uploader for dataset (removed the title here)
+        
         # File uploader for dataset
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=None)
 
