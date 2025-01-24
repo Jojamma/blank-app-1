@@ -41,15 +41,14 @@ if not st.session_state.logged_in:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-if st.button("Login"):
-    if check_credentials(username, password):
-        st.session_state.logged_in = True
-        st.success("Logged in successfully!")
-        # Use st.rerun() instead of st.experimental_rerun()
-        st.rerun()
-    else:
-        st.error("Invalid username or password.")
-
+    if st.button("Login"):
+        if check_credentials(username, password):
+            st.session_state.logged_in = True
+            st.success("Logged in successfully!")
+            # Use st.rerun() instead of st.experimental_rerun()
+            st.rerun()
+        else:
+            st.error("Invalid username or password.")
 else:
     # Check if we need to show the log page
     if st.session_state.show_log_page:
@@ -66,7 +65,7 @@ else:
         if st.button("Back to Main"):
             st.session_state.show_log_page = False
             # Force rerun to go back to main page
-            st.experimental_rerun()
+            st.rerun()
     else:
         # Main app content after login
         st.title("Large File Uploader")
