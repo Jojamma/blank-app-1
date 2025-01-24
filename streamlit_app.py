@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 
 # Title of the app
 st.title("Large File Uploader with Excel Logging")
@@ -45,30 +45,27 @@ if st.button("Run"):
             st.write("File uploaded successfully but not recognized as a CSV or image.")
 
         # Get dataset size in MB
-        dataset_size_mb = round(os.path.getbuffer(uploaded_file).nbytes / (1024 * 1024), 2)
+        dataset_size_mb = round(os.path.getsize(uploaded_file.name) / (1024 * 1024), 2)
 
         # Display selected model type and core option
         st.write(f"Model Type: {model_type}")
         st.write(f"Core Option: {core_option}")
 
-        # Create or update an Excel file with dataset size and model name
-        excel_file = "log.xlsx"
-        if not os.path.exists(excel_file):
-            # Create a new Excel file if it doesn't exist
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Log"
-            ws.append(["Date", "Dataset Size (MB)", "Model Name"])
-            wb.save(excel_file)
-
-        # Update the Excel file with new data
-        wb = load_workbook(excel_file)
-        ws = wb["Log"]
+        # Create an Excel file with dataset size and model name
+        excel_file_path = "log.xlsx"
+        
+        # Create a new Excel workbook and add data
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Log"
+        ws.append(["Date", "Dataset Size (MB)", "Model Name"])
         ws.append([pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"), dataset_size_mb, model_type])
-        wb.save(excel_file)
+        
+        # Save the workbook to a local file
+        wb.save(excel_file_path)
 
         # Provide a download link for the Excel file
-        with open(excel_file, "rb") as f:
+        with open(excel_file_path, "rb") as f:
             st.download_button(
                 label="Download Log Excel File",
                 data=f,
