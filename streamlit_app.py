@@ -12,7 +12,7 @@ def check_credentials(username, password):
 
 # Function to log results to a file
 def log_results(model_type, core_option, uploaded_file_name):
-    log_entry = f"{datetime.datetime.now()}: Model Type: {model_type}, Core Option: {core_option}, Uploaded File: {uploaded_file_name}\n"
+    log_entry = f"{datetime.datetime.now()}, Model Type: {model_type}, Core Option: {core_option}, Uploaded File: {uploaded_file_name}\n"
     with open("upload_log.txt", "a") as log_file:
         log_file.write(log_entry)
 
@@ -20,7 +20,7 @@ def log_results(model_type, core_option, uploaded_file_name):
 def read_logs():
     try:
         # Read logs from the file into a DataFrame
-        logs = pd.read_csv("upload_log.txt", sep=":", header=None, names=["Timestamp", "Details"])
+        logs = pd.read_csv("upload_log.txt", sep=",", header=None, names=["Timestamp", "Details"])
         return logs
     except FileNotFoundError:
         return pd.DataFrame(columns=["Timestamp", "Details"])
