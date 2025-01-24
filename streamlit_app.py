@@ -18,7 +18,7 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     # Create log file if it doesn't exist
     if not os.path.exists("upload_log.txt"):
         with open("upload_log.txt", "w") as log_file:
-            log_file.write("Timestamp, Dataset Name, Dataset Size, Core Option\n")  # Header
+            log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option\n")  # Header
             log_file.write(log_entry)
         print("Created upload_log.txt and added the first entry.")
     else:
@@ -29,10 +29,21 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
 # Function to read logs from the file
 def read_logs():
     try:
-        # Read logs from the file into a DataFrame
+        # Check if the file exists and has content
+        if os.path.getsize("upload_log.txt") == 0:
+            print("Log file is empty.")
+            return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
+        
+        # Read logs into a DataFrame
         logs = pd.read_csv("upload_log.txt", sep=",")
         return logs
-    except FileNotFoundError:
+    
+    except pd.errors.EmptyDataError:
+        print("Log file is empty.")
+        return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
+    
+    except pd.errors.ParserError as e:
+        print(f"Error parsing log file: {e}")
         return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Core Option"])
 
 # Initialize session states if they don't exist
@@ -52,6 +63,8 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
+            # Use st.experimental_rerun() to refresh the app state
+            st.experimental_rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -83,23 +96,6 @@ else:
             else:
                 # Process the uploaded file only after clicking Run and uploading a file
                 dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
-
-                if uploaded_file.name.endswith('.csv'):
-                    try:
-                        # Read and process CSV in chunks to avoid memory issues
-                        chunk_size = 10 ** 6  # Adjust chunk size as needed
-
-                        for chunk in pd.read_csv(uploaded_file, chunksize=chunk_size):
-                            pass  # Process each chunk as needed
-
-                    except Exception as e:
-                        st.error(f"Error reading CSV file: {e}")
-
-                elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                    pass  # Handle image files here
-
-                else:
-                    pass  # Handle other unsupported file types here
 
                 # Log results after processing successfully
                 log_results(model_type, core_option, uploaded_file.name, dataset_size)
