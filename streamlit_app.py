@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
 PASSWORD = "password"
@@ -14,16 +15,19 @@ def check_credentials(username, password):
 def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     log_entry = f"{datetime.datetime.now()}, {uploaded_file_name}, {dataset_size}, {core_option}\n"
     
-    # Create log file if it doesn't exist
-    if not os.path.exists("upload_log.txt"):
-        with open("upload_log.txt", "w") as log_file:
-            log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option\n")  # Header
-            log_file.write(log_entry)
-        print("Created upload_log.txt and added the first entry.")
-    else:
-        with open("upload_log.txt", "a") as log_file:
-            log_file.write(log_entry)
-        print(f"Updated upload_log.txt with new entry: {log_entry.strip()}")
+    try:
+        # Create log file if it doesn't exist
+        if not os.path.exists("upload_log.txt"):
+            with open("upload_log.txt", "w") as log_file:
+                log_file.write("Timestamp,Dataset Name,Dataset Size,Core Option\n")  # Header
+                log_file.write(log_entry)
+            print(f"Log file created and first entry added: {log_entry.strip()}")
+        else:
+            with open("upload_log.txt", "a") as log_file:
+                log_file.write(log_entry)
+            print(f"Log entry appended: {log_entry.strip()}")
+    except Exception as e:
+        print(f"Error writing to log file: {e}")
 
 # Function to read logs from the file
 def read_logs():
