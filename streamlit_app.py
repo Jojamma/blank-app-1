@@ -133,4 +133,3 @@ else:
                     if st.button("View Report"):
                         st.session_state.show_report_page = True  # Set flag for report page display
                         st.experimental_rerun()  # Rerun the app to show the report page
-
