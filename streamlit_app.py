@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import datetime
-import os
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
@@ -48,12 +46,21 @@ else:
                 # Display column names for CSV files
                 if uploaded_file.name.endswith('.csv'):
                     df = pd.read_csv(uploaded_file)
-                    st.write(f"Uploaded Dataset Columns: {list(df.columns)}")
+                    st.write("### Columns in the Dataset")
+                    st.write(list(df.columns))
                 else:
                     st.error("Unsupported file type. Please upload a CSV file.")
 
+                # Display core option
+                st.write("### Core Used")
+                st.write(core_option)
+
+                # Display model type
+                st.write("### Model Type")
+                st.write(model_type)
+
                 # Display features based on the selected model type
-                st.write("### Selected Features:")
+                st.write("### Model Features")
                 if model_type == "Transformer":
                     st.write("- Epoch")
                     st.write("- Batch Size")
@@ -78,10 +85,6 @@ else:
                     st.write("- Iteration")
                     st.write("- Learning Rate")
                     st.write("- Activation Functions")
-
-                # Display selected model type and core option only after Run button is clicked and file is uploaded
-                st.write(f"Model Type: {model_type}")
-                st.write(f"Core Option: {core_option}")
 
             except Exception as e:
                 st.error(f"Error processing the uploaded file: {e}")
