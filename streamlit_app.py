@@ -8,7 +8,7 @@ st.markdown(
     <style>
     /* Reduce the font size of the sidebar */
     .css-1d391kg, .css-18e3th9 {
-        font-size: 12px;
+        font-size: 6px;
     }
     /* Reduce the width of the sidebar */
     .css-1lcbmhc {
