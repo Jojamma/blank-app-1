@@ -104,6 +104,10 @@ else:
 
     elif page == "Log Page":
         st.title("Log Page")
+        
+        # Disclaimer about log data
+        st.warning("**Disclaimer:** The log results will not be saved once you log out. Please download the log data if you wish to keep a record.")
+
         st.write("This page logs all the model and dataset information during the session.")
 
         # Display Log Table
