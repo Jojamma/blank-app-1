@@ -127,13 +127,15 @@ else:
                     st.error(f"Error processing the uploaded file: {e}")
 
     elif page == "Log Results":
-        # Log Results Page Logic
         st.title("Log Results")
 
         # Force re-reading logs every time the page loads
         logs = read_logs()
 
         if not logs.empty:
+            # Reverse the order to display the most recent logs at the top
+            logs = logs.iloc[::-1].reset_index(drop=True)
+
             st.subheader("Log Table")
             
             # Ensure the whole log file is displayed by adjusting height dynamically
