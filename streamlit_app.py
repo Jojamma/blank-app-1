@@ -27,69 +27,64 @@ if not st.session_state.logged_in:
 else:
     st.title("Dataset Uploader and Model Selector")
 
-    # Create two columns for layout
-    left_col, right_col = st.columns([2, 1])
+    # File uploader for dataset
+    uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
 
-    # File uploader and input controls in the left column
-    with left_col:
-        uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
-        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-        core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
-        run_button_clicked = st.button("Run")
+    model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
+    core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
-    # Outputs displayed in the right column
+    run_button_clicked = st.button("Run")
+
     if run_button_clicked:
         if uploaded_file is None:
-            with right_col:
-                st.error("Please upload a valid file before running.")
+            # Display an error message if no file is uploaded after clicking Run
+            st.error("Please upload a valid file before running.")
         else:
             dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
 
             try:
-                with right_col:
-                    # Display column names for CSV files
-                    if uploaded_file.name.endswith('.csv'):
-                        df = pd.read_csv(uploaded_file)
-                        st.write("### Columns in the Dataset")
-                        st.write(list(df.columns))
-                    else:
-                        st.error("Unsupported file type. Please upload a CSV file.")
+                # Display column names for CSV files
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                    st.write("### Columns in the Dataset")
+                    st.write(list(df.columns))
+                else:
+                    st.error("Unsupported file type. Please upload a CSV file.")
 
-                    # Display core option
-                    st.write("### Core Used")
-                    st.write(core_option)
+                # Display core option
+                st.write("### Core Used")
+                st.write(core_option)
 
-                    # Display model type
-                    st.write("### Model Type")
-                    st.write(model_type)
+                # Display model type
+                st.write("### Model Type")
+                st.write(model_type)
 
-                    # Display features based on the selected model type
-                    st.write("### Model Features")
-                    if model_type == "Transformer":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Attention Mechanism")
-                    elif model_type == "CNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Convolutional Layers")
-                    elif model_type == "RNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Hidden States")
-                    elif model_type == "ANN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Activation Functions")
+                # Display features based on the selected model type
+                st.write("### Model Features")
+                if model_type == "Transformer":
+                    st.write("- Epoch")
+                    st.write("- Batch Size")
+                    st.write("- Iteration")
+                    st.write("- Learning Rate")
+                    st.write("- Attention Mechanism")
+                elif model_type == "CNN":
+                    st.write("- Epoch")
+                    st.write("- Batch Size")
+                    st.write("- Iteration")
+                    st.write("- Learning Rate")
+                    st.write("- Convolutional Layers")
+                elif model_type == "RNN":
+                    st.write("- Epoch")
+                    st.write("- Batch Size")
+                    st.write("- Iteration")
+                    st.write("- Learning Rate")
+                    st.write("- Hidden States")
+                elif model_type == "ANN":
+                    st.write("- Epoch")
+                    st.write("- Batch Size")
+                    st.write("- Iteration")
+                    st.write("- Learning Rate")
+                    st.write("- Activation Functions")
 
             except Exception as e:
-                with right_col:
-                    st.error(f"Error processing the uploaded file: {e}")
+                st.error(f"Error processing the uploaded file: {e}")
