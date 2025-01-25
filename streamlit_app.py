@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
@@ -98,4 +99,21 @@ else:
     elif page == "New Page":
         st.title("New Page")
         st.write("This is a new page where you can add additional functionality.")
-        st.write("Feel free to customize this page with the features you need.")
+
+        # Table with specified columns
+        st.write("### Dataset Information Table")
+        table_data = {
+            "Dataset Name": ["Dataset 1", "Dataset 2", "Dataset 3"],
+            "Dataset Size": ["1 GB", "500 MB", "2 GB"],
+            "Model": ["Transformer", "CNN", "ANN"],
+            "CPU": ["Used", "Not Used", "Used"],
+            "GPU": ["Not Used", "Used", "Not Used"],
+            "HDFS": ["Not Used", "Not Used", "Used"],
+            "Timestamp": [
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ]
+        }
+        df = pd.DataFrame(table_data)
+        st.dataframe(df)
