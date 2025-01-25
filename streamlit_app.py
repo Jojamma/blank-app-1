@@ -14,6 +14,10 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
+# Initialize log data in session state
+if 'log_data' not in st.session_state:
+    st.session_state.log_data = []
+
 # Login page logic
 if not st.session_state.logged_in:
     st.title("Login Page")
@@ -48,72 +52,29 @@ else:
                 st.error("Please upload a valid file before running.")
             else:
                 dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
+                dataset_name = uploaded_file.name
 
-                try:
-                    # Display column names for CSV files
-                    if uploaded_file.name.endswith('.csv'):
-                        df = pd.read_csv(uploaded_file)
-                        st.write("### Columns in the Dataset")
-                        st.write(list(df.columns))
-                    else:
-                        st.error("Unsupported file type. Please upload a CSV file.")
+                # Log details into session state
+                st.session_state.log_data.append({
+                    "Dataset Name": dataset_name,
+                    "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
+                    "Model": model_type,
+                    "CPU": "Used" if core_option == "CPU" else "Not Used",
+                    "GPU": "Used" if core_option == "GPU" else "Not Used",
+                    "HDFS": "Used" if core_option == "HDFS" else "Not Used",
+                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                })
 
-                    # Display core option
-                    st.write("### Core Used")
-                    st.write(core_option)
+                st.success("Run executed and details logged successfully!")
 
-                    # Display model type
-                    st.write("### Model Type")
-                    st.write(model_type)
-
-                    # Display features based on the selected model type
-                    st.write("### Model Features")
-                    if model_type == "Transformer":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Attention Mechanism")
-                    elif model_type == "CNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Convolutional Layers")
-                    elif model_type == "RNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Hidden States")
-                    elif model_type == "ANN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Activation Functions")
-
-                except Exception as e:
-                    st.error(f"Error processing the uploaded file: {e}")
-    
     elif page == "Log Page":
         st.title("Log Page")
-        st.write("This is a log page where you can view system activity.")
+        st.write("This page logs all the model and dataset information during the session.")
 
-        # Log Table
-        st.write("### Log Table")
-        table_data = {
-            "Dataset Name": ["Dataset 1", "Dataset 2", "Dataset 3"],
-            "Dataset Size": ["1 GB", "500 MB", "2 GB"],
-            "Model": ["Transformer", "CNN", "ANN"],
-            "CPU": ["Used", "Not Used", "Used"],
-            "GPU": ["Not Used", "Used", "Not Used"],
-            "HDFS": ["Not Used", "Not Used", "Used"],
-            "Timestamp": [
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            ]
-        }
-        df = pd.DataFrame(table_data)
-        st.dataframe(df)
+        # Display Log Table
+        if st.session_state.log_data:
+            st.write("### Log Table")
+            log_df = pd.DataFrame(st.session_state.log_data)
+            st.dataframe(log_df)
+        else:
+            st.info("No logs available yet.")
