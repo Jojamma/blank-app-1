@@ -14,9 +14,8 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-# Initialize log data in session state
-if 'log_data' not in st.session_state:
-    st.session_state.log_data = []
+if 'show_nav' not in st.session_state:
+    st.session_state.show_nav = False  # To control when to show the navigation bar
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -27,9 +26,18 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.query_params = {"logged_in": "true"}  # Updated for new syntax
+            st.session_state.show_nav = False  # Start on the landing page after login
+            st.success("Login successful!")
         else:
             st.error("Invalid username or password.")
+
+elif not st.session_state.show_nav:
+    # Landing page after login
+    st.title("Welcome!")
+    st.write("You are successfully logged in. Use the navigation menu to explore the app.")
+    if st.button("Go to Navigation"):
+        st.session_state.show_nav = True  # Enable the navigation bar
+
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
