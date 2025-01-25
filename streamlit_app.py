@@ -37,25 +37,24 @@ def log_results(model_type, core_option, uploaded_file_name, dataset_size):
     except Exception as e:
         st.error(f"Error writing to log file: {e}")
 
-# Function to read logs from the file (no caching for fresh data)
+# Function to read logs from the file (disable caching for fresh data)
 def read_logs():
     try:
         if not os.path.exists("upload_log.txt"):
             st.write("Log file not found!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
 
-        # Read logs and skip bad lines if any
-        logs = pd.read_csv("upload_log.txt", on_bad_lines='skip')  # Skip problematic lines
-        
+        # Explicitly disable caching to ensure fresh data is read
+        logs = pd.read_csv("upload_log.txt", on_bad_lines='skip')
+
         if logs.empty:
             st.write("Log file is empty!")
             return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
 
-        st.write(f"Logs found: {logs.shape[0]} rows.")  # Debug print to check number of rows in logs
         return logs
 
     except Exception as e:
-        st.write(f"Error reading logs: {e}")
+        st.error(f"Error reading logs: {e}")
         return pd.DataFrame(columns=["Timestamp", "Dataset Name", "Dataset Size", "Model Used", "CPU", "GPU", "HDFS"])
 
 # Initialize session states if they don't exist
@@ -111,10 +110,8 @@ else:
                     if uploaded_file.name.endswith('.csv'):
                         df = pd.read_csv(uploaded_file)
                         st.write(f"Uploaded Dataset Columns: {list(df.columns)}")
-                    elif uploaded_file.name.endswith(('.jpg', '.jpeg', '.png')):
-                        st.write("Image files do not have columns.")
                     else:
-                        st.error("Unsupported file type. Please upload a CSV or image file.")
+                        st.error("Unsupported file type. Please upload a CSV file.")
 
                     # Log results after processing successfully
                     log_results(model_type, core_option, uploaded_file.name, dataset_size)
@@ -133,11 +130,10 @@ else:
         # Log Results Page Logic
         st.title("Log Results")
 
-        # Re-read logs from the file
+        # Force re-reading logs every time the page loads
         logs = read_logs()
 
         if not logs.empty:
-            # Display log table on the Log Results page
             st.subheader("Log Table")
             
             # Ensure the whole log file is displayed by adjusting height dynamically
