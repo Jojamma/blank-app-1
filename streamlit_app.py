@@ -22,8 +22,7 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.experimental_set_query_params(logged_in="true")  # Optional for better URL tracking
-            # Avoid rerun if unnecessary
+            st.query_params = {"logged_in": "true"}  # Updated for new syntax
         else:
             st.error("Invalid username or password.")
 else:
