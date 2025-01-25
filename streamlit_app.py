@@ -29,7 +29,7 @@ if not st.session_state.logged_in:
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Dashboard", "New Page"])
+    page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
     if page == "Dashboard":
         st.title("Dataset Uploader and Model Selector")
@@ -96,12 +96,12 @@ else:
                 except Exception as e:
                     st.error(f"Error processing the uploaded file: {e}")
     
-    elif page == "New Page":
-        st.title("New Page")
-        st.write("This is a new page where you can add additional functionality.")
+    elif page == "Log Page":
+        st.title("Log Page")
+        st.write("This is a log page where you can view system activity.")
 
-        # Table with specified columns
-        st.write("### Dataset Information Table")
+        # Log Table
+        st.write("### Log Table")
         table_data = {
             "Dataset Name": ["Dataset 1", "Dataset 2", "Dataset 3"],
             "Dataset Size": ["1 GB", "500 MB", "2 GB"],
