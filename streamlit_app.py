@@ -6,17 +6,20 @@ from datetime import datetime
 st.markdown(
     """
     <style>
-    /* Reduce the font size of the sidebar */
-    .css-1d391kg, .css-18e3th9 {
-        font-size: 6px;
+    /* Reduce the font size of the sidebar and its elements */
+    .sidebar .css-1d391kg, .sidebar .css-18e3th9 {
+        font-size: 12px;
     }
     /* Reduce the width of the sidebar */
-    .css-1lcbmhc {
-        width: 200px; /* Adjust the width as needed */
+    .css-1d391kg {
+        max-width: 200px; /* Adjust width as needed */
     }
-    /* Adjust the font size of the radio button text */
+    .css-e1fqkh {
+        max-width: 200px; /* Adjust width as needed */
+    }
+    /* Adjust font sizes inside the sidebar */
     .css-16huue1 {
-        font-size: 14px;
+        font-size: 14px; /* Adjust font size */
     }
     </style>
     """,
