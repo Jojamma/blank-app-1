@@ -74,31 +74,16 @@ else:
                     st.write("### Model Type")
                     st.write(model_type)
 
-                    st.write("### Model Features")
-                    if model_type == "Transformer":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Attention Mechanism")
-                    elif model_type == "CNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Convolutional Layers")
-                    elif model_type == "RNN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Hidden States")
-                    elif model_type == "ANN":
-                        st.write("- Epoch")
-                        st.write("- Batch Size")
-                        st.write("- Iteration")
-                        st.write("- Learning Rate")
-                        st.write("- Activation Functions")
+                    # Display model features based on selection
+                    features = {
+                        "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
+                        "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
+                        "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
+                        "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
+                    }
+                    
+                    for feature in features[model_type]:
+                        st.write(f"- {feature}")
 
                     # Log details into session state
                     new_log = {
@@ -126,5 +111,15 @@ else:
             st.write("### Log Table")
             log_df = pd.DataFrame(st.session_state.log_data)
             st.dataframe(log_df)
+
+            # Option to download the log data as CSV
+            csv = log_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download Log as CSV",
+                data=csv,
+                file_name='log_data.csv',
+                mime='text/csv',
+                key='download-csv'
+            )
         else:
             st.info("No logs available yet.")
