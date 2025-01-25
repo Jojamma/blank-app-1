@@ -48,24 +48,73 @@ else:
 
         if run_button_clicked:
             if uploaded_file is None:
-                # Display an error message if no file is uploaded after clicking Run
                 st.error("Please upload a valid file before running.")
             else:
                 dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
                 dataset_name = uploaded_file.name
 
-                # Log details into session state
-                st.session_state.log_data.append({
-                    "Dataset Name": dataset_name,
-                    "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
-                    "Model": model_type,
-                    "CPU": "Used" if core_option == "CPU" else "Not Used",
-                    "GPU": "Used" if core_option == "GPU" else "Not Used",
-                    "HDFS": "Used" if core_option == "HDFS" else "Not Used",
-                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
+                try:
+                    # Read and display dataset columns
+                    if uploaded_file.name.endswith('.csv'):
+                        df = pd.read_csv(uploaded_file)
+                        st.write("### Columns in the Dataset")
+                        st.write(list(df.columns))
+                    else:
+                        st.error("Unsupported file type. Please upload a CSV file.")
 
-                st.success("Run executed and details logged successfully!")
+                    # Display dataset details
+                    st.write(f"**Dataset Name:** {dataset_name}")
+                    st.write(f"**Dataset Size:** {dataset_size / (1024 * 1024):.2f} MB")
+
+                    # Display core option
+                    st.write("### Core Used")
+                    st.write(core_option)
+
+                    # Display model type and features
+                    st.write("### Model Type")
+                    st.write(model_type)
+
+                    st.write("### Model Features")
+                    if model_type == "Transformer":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Attention Mechanism")
+                    elif model_type == "CNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Convolutional Layers")
+                    elif model_type == "RNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Hidden States")
+                    elif model_type == "ANN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Activation Functions")
+
+                    # Log details into session state
+                    st.session_state.log_data.append({
+                        "Dataset Name": dataset_name,
+                        "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
+                        "Model": model_type,
+                        "CPU": "Used" if core_option == "CPU" else "Not Used",
+                        "GPU": "Used" if core_option == "GPU" else "Not Used",
+                        "HDFS": "Used" if core_option == "HDFS" else "Not Used",
+                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    })
+
+                    st.success("Run executed and details logged successfully!")
+
+                except Exception as e:
+                    st.error(f"Error processing the uploaded file: {e}")
 
     elif page == "Log Page":
         st.title("Log Page")
