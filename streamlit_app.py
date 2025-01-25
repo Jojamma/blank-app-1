@@ -101,7 +101,7 @@ else:
                         st.write("- Activation Functions")
 
                     # Log details into session state
-                    st.session_state.log_data.append({
+                    new_log = {
                         "Dataset Name": dataset_name,
                         "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
                         "Model": model_type,
@@ -109,7 +109,8 @@ else:
                         "GPU": "Used" if core_option == "GPU" else "Not Used",
                         "HDFS": "Used" if core_option == "HDFS" else "Not Used",
                         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    })
+                    }
+                    st.session_state.log_data.insert(0, new_log)  # Insert at the start for recent-first ordering
 
                     st.success("Run executed and details logged successfully!")
 
