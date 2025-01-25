@@ -14,7 +14,9 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-# Initialize log data in session state
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "Dashboard"  # Default page
+
 if 'log_data' not in st.session_state:
     st.session_state.log_data = []
 
@@ -27,15 +29,25 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.query_params = {"logged_in": "true"}  # Updated for new syntax
+            st.success("Logged in successfully!")
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
+    page = st.sidebar.radio(
+        "Go to",
+        ["Dashboard", "Log Page"],
+        index=["Dashboard", "Log Page"].index(st.session_state.current_page),
+        key="navigation"
+    )
 
-    if page == "Dashboard":
+    # Update session state based on the selected page
+    if st.session_state.current_page != page:
+        st.session_state.current_page = page
+
+    # Render the selected page
+    if st.session_state.current_page == "Dashboard":
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -81,7 +93,7 @@ else:
                         "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
                         "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
                     }
-                    
+
                     for feature in features[model_type]:
                         st.write(f"- {feature}")
 
@@ -102,7 +114,7 @@ else:
                 except Exception as e:
                     st.error(f"Error processing the uploaded file: {e}")
 
-    elif page == "Log Page":
+    elif st.session_state.current_page == "Log Page":
         st.title("Log Page")
 
         # Display Log Table
