@@ -13,6 +13,9 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
+if 'dashboard_visible' not in st.session_state:
+    st.session_state.dashboard_visible = False
+
 # Login page logic
 if not st.session_state.logged_in:
     st.title("Login Page")
@@ -26,11 +29,14 @@ if not st.session_state.logged_in:
         else:
             st.error("Invalid username or password.")
 else:
-    # Sidebar for navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Dashboard", "New Page"])
+    # Sidebar for dashboard visibility toggle
+    with st.sidebar:
+        st.title("Navigation")
+        if st.button("Show Dashboard"):
+            st.session_state.dashboard_visible = not st.session_state.dashboard_visible
 
-    if page == "Dashboard":
+    # Display the dashboard only if the toggle is activated
+    if st.session_state.dashboard_visible:
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -94,8 +100,5 @@ else:
 
                 except Exception as e:
                     st.error(f"Error processing the uploaded file: {e}")
-    
-    elif page == "New Page":
-        st.title("New Page")
-        st.write("This is a new page where you can add additional functionality.")
-        st.write("Feel free to customize this page with the features you need.")
+    else:
+        st.write("Click the 'Show Dashboard' button in the sidebar to access the dashboard.")
