@@ -139,6 +139,9 @@ else:
         if not logs.empty:
             # Display log table on the Log Results page
             st.subheader("Log Table")
-            st.dataframe(logs)  # Displaying the DataFrame as an interactive table in Streamlit
+            
+            # Ensure the whole log file is displayed by adjusting height dynamically
+            table_height = min(800, max(300, logs.shape[0] * 20))  # Adjust height dynamically
+            st.dataframe(logs, height=table_height)
         else:
             st.write("No logs available.")
