@@ -2,30 +2,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Inject custom CSS to adjust sidebar styles
-st.markdown(
-    """
-    <style>
-    /* Reduce the font size of the sidebar and its elements */
-    .sidebar .css-1d391kg, .sidebar .css-18e3th9 {
-        font-size: 12px;
-    }
-    /* Reduce the width of the sidebar */
-    .css-1d391kg {
-        max-width: 200px; /* Adjust width as needed */
-    }
-    .css-e1fqkh {
-        max-width: 200px; /* Adjust width as needed */
-    }
-    /* Adjust font sizes inside the sidebar */
-    .css-16huue1 {
-        font-size: 14px; /* Adjust font size */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
 PASSWORD = "jogu@2003"
@@ -38,9 +14,7 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = "Dashboard"  # Default page
-
+# Initialize log data in session state
 if 'log_data' not in st.session_state:
     st.session_state.log_data = []
 
@@ -53,25 +27,15 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.success("Logged in successfully!")
+            st.query_params = {"logged_in": "true"}  # Updated for new syntax
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio(
-        "Go to",
-        ["Dashboard", "Log Page"],
-        index=["Dashboard", "Log Page"].index(st.session_state.current_page),
-        key="navigation"
-    )
+    page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
-    # Update session state based on the selected page
-    if st.session_state.current_page != page:
-        st.session_state.current_page = page
-
-    # Render the selected page
-    if st.session_state.current_page == "Dashboard":
+    if page == "Dashboard":
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -117,7 +81,7 @@ else:
                         "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
                         "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
                     }
-
+                    
                     for feature in features[model_type]:
                         st.write(f"- {feature}")
 
@@ -138,7 +102,7 @@ else:
                 except Exception as e:
                     st.error(f"Error processing the uploaded file: {e}")
 
-    elif st.session_state.current_page == "Log Page":
+    elif page == "Log Page":
         st.title("Log Page")
 
         # Display Log Table
