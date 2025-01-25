@@ -2,6 +2,27 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
+# Inject custom CSS to adjust sidebar styles
+st.markdown(
+    """
+    <style>
+    /* Reduce the font size of the sidebar */
+    .css-1d391kg, .css-18e3th9 {
+        font-size: 12px;
+    }
+    /* Reduce the width of the sidebar */
+    .css-1lcbmhc {
+        width: 200px; /* Adjust the width as needed */
+    }
+    /* Adjust the font size of the radio button text */
+    .css-16huue1 {
+        font-size: 14px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Hardcoded credentials for demonstration (use a secure method in production)
 USERNAME = "admin"
 PASSWORD = "jogu@2003"
