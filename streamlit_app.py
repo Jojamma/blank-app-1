@@ -22,69 +22,80 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
+            st.experimental_rerun()  # Refresh page after login
         else:
             st.error("Invalid username or password.")
 else:
-    st.title("Dataset Uploader and Model Selector")
+    # Sidebar for navigation
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Dashboard", "New Page"])
 
-    # File uploader for dataset
-    uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
+    if page == "Dashboard":
+        st.title("Dataset Uploader and Model Selector")
 
-    model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-    core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
+        # File uploader for dataset
+        uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
 
-    run_button_clicked = st.button("Run")
+        model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
+        core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
-    if run_button_clicked:
-        if uploaded_file is None:
-            # Display an error message if no file is uploaded after clicking Run
-            st.error("Please upload a valid file before running.")
-        else:
-            dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
+        run_button_clicked = st.button("Run")
 
-            try:
-                # Display column names for CSV files
-                if uploaded_file.name.endswith('.csv'):
-                    df = pd.read_csv(uploaded_file)
-                    st.write("### Columns in the Dataset")
-                    st.write(list(df.columns))
-                else:
-                    st.error("Unsupported file type. Please upload a CSV file.")
+        if run_button_clicked:
+            if uploaded_file is None:
+                # Display an error message if no file is uploaded after clicking Run
+                st.error("Please upload a valid file before running.")
+            else:
+                dataset_size = uploaded_file.size  # Get size of the uploaded file in bytes
 
-                # Display core option
-                st.write("### Core Used")
-                st.write(core_option)
+                try:
+                    # Display column names for CSV files
+                    if uploaded_file.name.endswith('.csv'):
+                        df = pd.read_csv(uploaded_file)
+                        st.write("### Columns in the Dataset")
+                        st.write(list(df.columns))
+                    else:
+                        st.error("Unsupported file type. Please upload a CSV file.")
 
-                # Display model type
-                st.write("### Model Type")
-                st.write(model_type)
+                    # Display core option
+                    st.write("### Core Used")
+                    st.write(core_option)
 
-                # Display features based on the selected model type
-                st.write("### Model Features")
-                if model_type == "Transformer":
-                    st.write("- Epoch")
-                    st.write("- Batch Size")
-                    st.write("- Iteration")
-                    st.write("- Learning Rate")
-                    st.write("- Attention Mechanism")
-                elif model_type == "CNN":
-                    st.write("- Epoch")
-                    st.write("- Batch Size")
-                    st.write("- Iteration")
-                    st.write("- Learning Rate")
-                    st.write("- Convolutional Layers")
-                elif model_type == "RNN":
-                    st.write("- Epoch")
-                    st.write("- Batch Size")
-                    st.write("- Iteration")
-                    st.write("- Learning Rate")
-                    st.write("- Hidden States")
-                elif model_type == "ANN":
-                    st.write("- Epoch")
-                    st.write("- Batch Size")
-                    st.write("- Iteration")
-                    st.write("- Learning Rate")
-                    st.write("- Activation Functions")
+                    # Display model type
+                    st.write("### Model Type")
+                    st.write(model_type)
 
-            except Exception as e:
-                st.error(f"Error processing the uploaded file: {e}")
+                    # Display features based on the selected model type
+                    st.write("### Model Features")
+                    if model_type == "Transformer":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Attention Mechanism")
+                    elif model_type == "CNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Convolutional Layers")
+                    elif model_type == "RNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Hidden States")
+                    elif model_type == "ANN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Activation Functions")
+
+                except Exception as e:
+                    st.error(f"Error processing the uploaded file: {e}")
+    
+    elif page == "New Page":
+        st.title("New Page")
+        st.write("This is a new page where you can add additional functionality.")
+        st.write("Feel free to customize this page with the features you need.")
