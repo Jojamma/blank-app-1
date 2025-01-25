@@ -113,6 +113,33 @@ else:
                     else:
                         st.error("Unsupported file type. Please upload a CSV file.")
 
+                    # Display features based on the selected model type
+                    st.write("### Selected Features:")
+                    if model_type == "Transformer":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Attention Mechanism")
+                    elif model_type == "CNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Convolutional Layers")
+                    elif model_type == "RNN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Hidden States")
+                    elif model_type == "ANN":
+                        st.write("- Epoch")
+                        st.write("- Batch Size")
+                        st.write("- Iteration")
+                        st.write("- Learning Rate")
+                        st.write("- Activation Functions")
+
                     # Log results after processing successfully
                     log_results(model_type, core_option, uploaded_file.name, dataset_size)
 
