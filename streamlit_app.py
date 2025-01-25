@@ -13,10 +13,6 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-# Initialize dashboard stats
-if 'uploaded_file_count' not in st.session_state:
-    st.session_state.uploaded_file_count = 0
-
 # Login page logic
 if not st.session_state.logged_in:
     st.title("Login Page")
@@ -31,17 +27,10 @@ if not st.session_state.logged_in:
 else:
     st.title("Dataset Uploader and Model Selector")
 
-    # Create three columns for layout: Dashboard, Inputs, and Outputs
-    dashboard_col, input_col, output_col = st.columns([1, 2, 2])
+    # Create two columns for layout: Inputs and Outputs
+    input_col, output_col = st.columns([2, 2])
 
-    # Dashboard in the left column
-    with dashboard_col:
-        st.subheader("Dashboard")
-        st.metric("Total Uploaded Files", st.session_state.uploaded_file_count)
-        st.metric("Last Core Used", st.session_state.get("last_core", "N/A"))
-        st.metric("Last Model Type", st.session_state.get("last_model", "N/A"))
-
-    # Inputs in the middle column
+    # Inputs in the left column
     with input_col:
         uploaded_file = st.file_uploader("Upload your dataset (supports large files up to 50GB)", type=["csv"])
         model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
@@ -54,11 +43,6 @@ else:
             with output_col:
                 st.error("Please upload a valid file before running.")
         else:
-            # Update dashboard stats
-            st.session_state.uploaded_file_count += 1
-            st.session_state.last_core = core_option
-            st.session_state.last_model = model_type
-
             try:
                 with output_col:
                     # Display column names for CSV files
