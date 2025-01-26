@@ -3,12 +3,18 @@ import pandas as pd
 from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
-USERNAME = "admin"
-PASSWORD = "jogu@2003"
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "jogu@2003"
+USER_USERNAME = "user"
+USER_PASSWORD = "user@123"
 
 # Function to check credentials
 def check_credentials(username, password):
-    return username == USERNAME and password == PASSWORD
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        return True, True  # Admin login
+    elif username == USER_USERNAME and password == USER_PASSWORD:
+        return True, False  # User login
+    return False, None  # Invalid login
 
 # Initialize session states if they don't exist
 if 'logged_in' not in st.session_state:
@@ -30,9 +36,10 @@ if not st.session_state.logged_in:
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if check_credentials(username, password):
+        valid, is_admin = check_credentials(username, password)
+        if valid:
             st.session_state.logged_in = True
-            st.session_state.is_admin = True  # Set as admin for demonstration
+            st.session_state.is_admin = is_admin  # Set user role based on login
             st.query_params = {"logged_in": "true"}
         else:
             st.error("Invalid username or password.")
@@ -65,7 +72,7 @@ else:
         else:
             st.info("No user logs available yet.")
 
-    elif page == "Dashboard":
+    elif page == "Dashboard" and not st.session_state.is_admin:
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -123,18 +130,13 @@ else:
                         "CPU": "Used" if core_option == "CPU" else "Not Used",
                         "GPU": "Used" if core_option == "GPU" else "Not Used",
                         "HDFS": "Used" if core_option == "HDFS" else "Not Used",
-                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    }
-                    
-                    # Log user activity for admin monitoring
-                    user_log_entry = {
-                        **new_log,
-                        **{"User": username}  # Assuming you want to log the username here.
+                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "User": username  # Log the username of the user running this action.
                     }
                     
                     # Insert logs into respective session states
                     st.session_state.log_data.insert(0, new_log)
-                    st.session_state.user_logs.insert(0, user_log_entry)
+                    st.session_state.user_logs.insert(0, new_log)  # Log for admin monitoring
 
                     st.success("Run executed and details logged successfully!")
 
