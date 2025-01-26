@@ -3,31 +3,20 @@ import pandas as pd
 from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "jogu@2003"
-USER_USERNAME = "user"
-USER_PASSWORD = "user@123"
+USERNAME = "admin"
+PASSWORD = "jogu@2003"
 
 # Function to check credentials
 def check_credentials(username, password):
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        return True, True  # Admin login
-    elif username == USER_USERNAME and password == USER_PASSWORD:
-        return True, False  # User login
-    return False, None  # Invalid login
+    return username == USERNAME and password == PASSWORD
 
 # Initialize session states if they don't exist
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-if 'is_admin' not in st.session_state:
-    st.session_state.is_admin = False
-
+# Initialize log data in session state
 if 'log_data' not in st.session_state:
     st.session_state.log_data = []
-
-if 'user_logs' not in st.session_state:
-    st.session_state.user_logs = []
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -36,43 +25,17 @@ if not st.session_state.logged_in:
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        valid, is_admin = check_credentials(username, password)
-        if valid:
+        if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.session_state.is_admin = is_admin  # Set user role based on login
-            st.query_params = {"logged_in": "true"}
+            st.query_params = {"logged_in": "true"}  # Updated for new syntax
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    if st.session_state.is_admin:
-        page = st.sidebar.radio("Go to", ["Admin Dashboard", "Log Page"])
-    else:
-        page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
+    page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
-    if page == "Admin Dashboard" and st.session_state.is_admin:
-        st.title("Admin Dashboard")
-
-        # Display all user logs
-        if st.session_state.user_logs:
-            log_df = pd.DataFrame(st.session_state.user_logs)
-            st.write("### User Logs")
-            st.dataframe(log_df)
-
-            # Option to download user logs as CSV
-            csv = log_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download User Logs as CSV",
-                data=csv,
-                file_name='user_logs.csv',
-                mime='text/csv',
-                key='download-user-logs'
-            )
-        else:
-            st.info("No user logs available yet.")
-
-    elif page == "Dashboard" and not st.session_state.is_admin:
+    if page == "Dashboard":
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -130,13 +93,9 @@ else:
                         "CPU": "Used" if core_option == "CPU" else "Not Used",
                         "GPU": "Used" if core_option == "GPU" else "Not Used",
                         "HDFS": "Used" if core_option == "HDFS" else "Not Used",
-                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "User": username  # Log the username of the user running this action.
+                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
-                    
-                    # Insert logs into respective session states
-                    st.session_state.log_data.insert(0, new_log)
-                    st.session_state.user_logs.insert(0, new_log)  # Log for admin monitoring
+                    st.session_state.log_data.insert(0, new_log)  # Insert at the start for recent-first ordering
 
                     st.success("Run executed and details logged successfully!")
 
@@ -148,8 +107,8 @@ else:
 
         # Display Log Table
         if st.session_state.log_data:
-            log_df = pd.DataFrame(st.session_state.log_data)
             st.write("### Log Table")
+            log_df = pd.DataFrame(st.session_state.log_data)
             st.dataframe(log_df)
 
             # Option to download the log data as CSV
