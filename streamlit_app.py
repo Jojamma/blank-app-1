@@ -14,9 +14,14 @@ def check_credentials(username, password):
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-# Initialize log data in session state
+if 'is_admin' not in st.session_state:
+    st.session_state.is_admin = False
+
 if 'log_data' not in st.session_state:
     st.session_state.log_data = []
+
+if 'user_logs' not in st.session_state:
+    st.session_state.user_logs = []
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -27,15 +32,40 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.query_params = {"logged_in": "true"}  # Updated for new syntax
+            st.session_state.is_admin = True  # Set as admin for demonstration
+            st.query_params = {"logged_in": "true"}
         else:
             st.error("Invalid username or password.")
 else:
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
+    if st.session_state.is_admin:
+        page = st.sidebar.radio("Go to", ["Admin Dashboard", "Log Page"])
+    else:
+        page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
-    if page == "Dashboard":
+    if page == "Admin Dashboard" and st.session_state.is_admin:
+        st.title("Admin Dashboard")
+
+        # Display all user logs
+        if st.session_state.user_logs:
+            log_df = pd.DataFrame(st.session_state.user_logs)
+            st.write("### User Logs")
+            st.dataframe(log_df)
+
+            # Option to download user logs as CSV
+            csv = log_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download User Logs as CSV",
+                data=csv,
+                file_name='user_logs.csv',
+                mime='text/csv',
+                key='download-user-logs'
+            )
+        else:
+            st.info("No user logs available yet.")
+
+    elif page == "Dashboard":
         st.title("Dataset Uploader and Model Selector")
 
         # File uploader for dataset
@@ -95,7 +125,16 @@ else:
                         "HDFS": "Used" if core_option == "HDFS" else "Not Used",
                         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
-                    st.session_state.log_data.insert(0, new_log)  # Insert at the start for recent-first ordering
+                    
+                    # Log user activity for admin monitoring
+                    user_log_entry = {
+                        **new_log,
+                        **{"User": username}  # Assuming you want to log the username here.
+                    }
+                    
+                    # Insert logs into respective session states
+                    st.session_state.log_data.insert(0, new_log)
+                    st.session_state.user_logs.insert(0, user_log_entry)
 
                     st.success("Run executed and details logged successfully!")
 
@@ -107,8 +146,8 @@ else:
 
         # Display Log Table
         if st.session_state.log_data:
-            st.write("### Log Table")
             log_df = pd.DataFrame(st.session_state.log_data)
+            st.write("### Log Table")
             st.dataframe(log_df)
 
             # Option to download the log data as CSV
