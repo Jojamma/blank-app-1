@@ -3,8 +3,14 @@ import pandas as pd
 from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
-USER_CREDENTIALS = {"user": "user@123"}
-ADMIN_CREDENTIALS = {"admin": "admin@123"}
+USER_CREDENTIALS = {
+    "user1": "user@123",
+    "user2": "user2@123",
+    "user3": "user3@123"
+}
+ADMIN_CREDENTIALS = {
+    "admin": "admin@123"
+}
 
 # Function to check credentials
 def check_credentials(username, password):
@@ -28,7 +34,7 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if check_credentials(username, password):
             st.session_state.logged_in = True
-            st.session_state.is_admin = username == "admin"  # Set admin status based on username
+            st.session_state.is_admin = username in ADMIN_CREDENTIALS  # Set admin status based on username
             st.success(f"Welcome, {username}!")
         else:
             st.error("Invalid username or password.")
