@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USER_CREDENTIALS = {
-    "user1": "user@123",
+    "user1": "user1@123",
     "user2": "user2@123",
     "user3": "user3@123"
 }
@@ -12,20 +12,18 @@ ADMIN_CREDENTIALS = {
     "admin": "admin@123"
 }
 
-# Initialize session states if they don't exist
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
-if 'active_users' not in st.session_state:
-    st.session_state.active_users = []  # To track active users and timestamps
-
-if 'log_data' not in st.session_state:
-    st.session_state.log_data = []
-
 # Function to check credentials
 def check_credentials(username, password):
     return (username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password) or \
            (username in ADMIN_CREDENTIALS and ADMIN_CREDENTIALS[username] == password)
+
+# Initialize session states if they don't exist
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+# Initialize log data in session state
+if 'log_data' not in st.session_state:
+    st.session_state.log_data = []
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -37,41 +35,17 @@ if not st.session_state.logged_in:
         if check_credentials(username, password):
             st.session_state.logged_in = True
             st.session_state.is_admin = username in ADMIN_CREDENTIALS  # Set admin status based on username
-            
-            # Log the active user with timestamp
-            if username not in [user['username'] for user in st.session_state.active_users]:
-                st.session_state.active_users.append({
-                    'username': username,
-                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
-            
             st.success(f"Welcome, {username}!")
         else:
             st.error("Invalid username or password.")
 else:
     # Check if the user is admin or regular user
     if st.session_state.is_admin:
-        # Admin view: Display active users
+        # Admin view: Empty page and navigation
         st.title("Admin Dashboard")
-        st.write("### Active Users")
+        st.write("Welcome to the Admin Dashboard. No further options are available.")
         
-        # Display number of logged-in users
-        num_users = len(st.session_state.active_users)
-        st.write(f"**Number of Users Logged In:** {num_users}")
-        
-        # Create a clickable list of usernames with timestamps
-        for user in st.session_state.active_users:
-            if st.button(user['username']):
-                # Show logs for the selected user
-                user_logs = [log for log in st.session_state.log_data if log['Username'] == user['username']]
-                if user_logs:
-                    log_df = pd.DataFrame(user_logs)
-                    st.write(f"### Logs for {user['username']}")
-                    st.dataframe(log_df)
-                else:
-                    st.write(f"No logs available for {user['username']}.")
-        
-        # Logout button for admin
+        # Optionally, provide a logout button here
         if st.button("Logout"):
             st.session_state.logged_in = False
             st.session_state.is_admin = False  # Reset admin status
@@ -132,9 +106,8 @@ else:
                         for feature in features[model_type]:
                             st.write(f"- {feature}")
 
-                        # Log details into session state with username tracking
+                        # Log details into session state
                         new_log = {
-                            "Username": username,
                             "Dataset Name": dataset_name,
                             "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
                             "Model": model_type,
@@ -155,12 +128,12 @@ else:
 
             # Display Log Table
             if st.session_state.log_data:
+                st.write("### Log Table")
                 log_df = pd.DataFrame(st.session_state.log_data)
-                log_df.set_index('Timestamp', inplace=True)
                 st.dataframe(log_df)
 
                 # Option to download the log data as CSV
-                csv = log_df.to_csv(index=True).encode('utf-8')
+                csv = log_df.to_csv(index=False).encode('utf-8')
                 st.download_button(
                     label="Download Log as CSV",
                     data=csv,
