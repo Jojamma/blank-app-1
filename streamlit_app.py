@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USER_CREDENTIALS = {
-    "user1": "user@123",
+    "user1": "user1@123",
     "user2": "user2@123",
     "user3": "user3@123"
 }
