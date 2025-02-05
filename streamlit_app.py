@@ -86,6 +86,7 @@ else:
         while True:
             logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
             if not logs_df.empty:
+                if 'id' in logs_df.columns:
                 logs_df.drop(columns=["id"], inplace=True)
                 logs_df.set_index("timestamp", inplace=True)
                 logs_placeholder.dataframe(logs_df)
