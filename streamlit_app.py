@@ -4,6 +4,13 @@ import sqlite3
 import hashlib
 from datetime import datetime
 import time
+import os
+import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
+import openai
+
+# Set the OpenAI API key
+openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your actual API key
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
@@ -24,16 +31,19 @@ c.execute('''CREATE TABLE IF NOT EXISTS logs (
     cpu TEXT,
     gpu TEXT,
     hdfs TEXT,
+    user_code TEXT,
+    notebook_path TEXT,
     timestamp TEXT
 )''')
 conn.commit()
 
-# Ensure user_code column exists in logs table
+# Ensure user_code and notebook_path columns exist
 try:
     c.execute("ALTER TABLE logs ADD COLUMN user_code TEXT DEFAULT 'No Code Provided'")
+    c.execute("ALTER TABLE logs ADD COLUMN notebook_path TEXT DEFAULT ''")
     conn.commit()
 except sqlite3.OperationalError:
-    pass  # Ignore if column already exists
+    pass  # Ignore if columns already exist
 
 # Function to hash passwords
 def hash_password(password):
@@ -62,6 +72,54 @@ def register_default_users():
 
 register_default_users()  # Run once to register default users
 
+# Function to generate Python code dynamically using OpenAI
+def generate_code(dataset_path, model, mode):
+    """Generates Python code for the given dataset, model, and execution mode."""
+    prompt = f"""
+    Generate Python code to train a {model} model on a dataset located at {dataset_path}.
+    Use {mode} mode for execution. Include comments and timestamps for each step.
+    """
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a Python expert specializing in machine learning."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"# Error generating code: {e}"
+
+# Function to execute the generated code in a Jupyter Notebook
+def execute_jupyter_notebook(generated_code):
+    """Executes the generated Python code in a Jupyter Notebook."""
+    timestamp = int(time.time())
+    notebook_path = f"notebooks/generated_notebook_{timestamp}.ipynb"
+
+    # Create a new Jupyter notebook
+    nb = nbformat.v4.new_notebook()
+    nb.cells.append(nbformat.v4.new_code_cell(generated_code))
+
+    # Ensure the `notebooks/` directory exists
+    os.makedirs("notebooks", exist_ok=True)
+    with open(notebook_path, "w") as f:
+        nbformat.write(nb, f)
+
+    # Execute the notebook
+    try:
+        ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+        with open(notebook_path, "r") as f:
+            nb = nbformat.read(f, as_version=4)
+        ep.preprocess(nb, {"metadata": {"path": "./"}})
+
+        with open(notebook_path, "w") as f:
+            nbformat.write(nb, f)
+
+        return notebook_path
+    except Exception as e:
+        return f"Execution failed: {e}"
+
 # Initialize session states
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -87,32 +145,18 @@ if not st.session_state.logged_in:
 else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
-        st.write("Admin Dashboard: View all user logs.")
-
-        logs_placeholder = st.empty()
-
-        while True:
-            try:
-                logs_df = pd.read_sql(
-                    "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp, user_code FROM logs ORDER BY timestamp DESC", conn
-                )
-                if not logs_df.empty:
-                    logs_df.set_index("timestamp", inplace=True)
-                    logs_placeholder.dataframe(logs_df)
-            except Exception as e:
-                st.error(f"Error loading logs: {e}")
-
-            time.sleep(2)
-            st.rerun()
-
+        logs_df = pd.read_sql(
+            "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs ORDER BY timestamp DESC", conn
+        )
+        if not logs_df.empty:
+            logs_df.set_index("timestamp", inplace=True)
+            st.dataframe(logs_df)
     else:
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
         if page == "Dashboard":
             st.title("Dataset Uploader and Model Selector")
-
-            # Upload Dataset
             uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
             if uploaded_file is not None:
@@ -120,35 +164,27 @@ else:
                 st.write("### Dataset Columns")
                 st.write(dataset.columns.tolist())
 
-            # Code Input
-            user_code = st.text_area("Enter your custom code here (optional)")
-
-            # Model and Core Selection
+            # Code Generation and Execution
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
             core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
+            generate_code_button = st.button("Generate Code")
 
-            if st.button("Run"):
-                if uploaded_file is None:
-                    st.error("Please upload a valid file before running.")
-                else:
-                    dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
-                    dataset_name = uploaded_file.name
+            if generate_code_button and uploaded_file is not None:
+                dataset_path = uploaded_file.name
+                generated_code = generate_code(dataset_path, model_type, core_option)
+                st.session_state["generated_code"] = generated_code
+                st.code(generated_code, language="python")
 
-                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, timestamp) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
-                              (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
-                               "Used" if core_option == "CPU" else "Not Used",
-                               "Used" if core_option == "GPU" else "Not Used",
-                               "Used" if core_option == "HDFS" else "Not Used",
-                               user_code if user_code else "No Code Provided",
-                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-                    conn.commit()
-                    st.success("Run executed and details logged successfully!")
+            execute_button = st.button("Execute Code")
+
+            if execute_button and "generated_code" in st.session_state:
+                notebook_path = execute_jupyter_notebook(st.session_state["generated_code"])
+                st.success(f"Notebook executed successfully! [Download Notebook]({notebook_path})")
 
         elif page == "Log Page":
             st.title("Log Page")
             logs_df = pd.read_sql(
-                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
+                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
                 conn, params=(st.session_state.username,))
             if not logs_df.empty:
                 logs_df.set_index("timestamp", inplace=True)
