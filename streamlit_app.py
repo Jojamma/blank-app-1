@@ -112,7 +112,7 @@ else:
                 st.write(dataset.columns.tolist())
 
             # Code Input
-            user_code = st.text_area("Enter your custom code here (optional)")
+            user_code = st.text_area("Enter your code here ")
 
             # Model and Core Selection
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
