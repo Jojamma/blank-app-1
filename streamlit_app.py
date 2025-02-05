@@ -8,7 +8,7 @@ import os
 from nbconvert.preprocessors import ExecutePreprocessor
 from datetime import datetime
 
-# OpenAI API Key (Replace with your own API key)
+# OpenAI API Key (Replace with your own)
 openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # Database initialization
@@ -66,7 +66,7 @@ def generate_python_code(prompt):
 # Function to create a Jupyter notebook from generated code
 def create_notebook(username, generated_code):
     notebook_name = f"notebooks/{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.ipynb"
-
+    
     # Create a new notebook
     nb = nbformat.v4.new_notebook()
     code_cell = nbformat.v4.new_code_cell(generated_code)
@@ -156,8 +156,14 @@ else:
                 st.write("### Dataset Preview")
                 st.dataframe(dataset.head())
 
+            # Select Model Type
+            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
+            
+            # Select Core Option
+            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
+
             # Generate Python Code
-            prompt = st.text_area("Describe your Python task (e.g., 'Train a linear regression model on the dataset')")
+            prompt = st.text_area("Describe your Python task (e.g., 'Train a Transformer model on the dataset')")
             generated_code = ""
 
             if st.button("Generate Code"):
@@ -178,7 +184,10 @@ else:
                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                               (st.session_state.username, uploaded_file.name if uploaded_file else "No Dataset",
                                f"{uploaded_file.size / (1024 * 1024):.2f} MB" if uploaded_file else "0 MB",
-                               "N/A", "N/A", "N/A", "N/A",
+                               model_type,
+                               "Used" if core_option == "CPU" else "Not Used",
+                               "Used" if core_option == "GPU" else "Not Used",
+                               "Used" if core_option == "HDFS" else "Not Used",
                                generated_code, execution_status,
                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                     conn.commit()
