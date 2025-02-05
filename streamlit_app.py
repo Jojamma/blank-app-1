@@ -90,11 +90,7 @@ else:
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
         if page == "Dashboard":
-            st.title("Dataset Uploader and Model Selector")
-            uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
-            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
-            
+                        
             # Display model features dynamically based on selection
             model_features = {
                 "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
@@ -103,16 +99,30 @@ else:
                 "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
             }
             
-            if model_type in model_features:
-                st.write("### Model Features")
-                for feature in model_features[model_type]:
-                    st.write(f"- {feature}")
+            if st.button("Run"):
+                if uploaded_file is None:
+                    st.error("Please upload a valid file before running.")
+                else:
+                    dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
+                    dataset_name = uploaded_file.name
+                    
+                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                              (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
+                               "Used" if core_option == "CPU" else "Not Used",
+                               "Used" if core_option == "GPU" else "Not Used",
+                               "Used" if core_option == "HDFS" else "Not Used",
+                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                    conn.commit()
+                    st.success("Run executed and details logged successfully!")
+                    
+                    # Display model features dynamically based on selection
+                    if model_type in model_features:
+                        st.write("### Model Features")
+                        for feature in model_features[model_type]:
+                            st.write(f"- {feature}")
             
-            st.title("Dataset Uploader and Model Selector")
-            uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
-            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
-            
+                        
             if st.button("Run"):
                 if uploaded_file is None:
                     st.error("Please upload a valid file before running.")
