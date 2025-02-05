@@ -39,7 +39,7 @@ def check_credentials(username, password):
         return True, bool(user[1])
     return False, False
 
-# Function to register default users (Run once to add admin/user accounts)
+# Function to register default users
 def register_default_users():
     default_users = {
         "admin": ("admin@123", 1),
@@ -52,7 +52,7 @@ def register_default_users():
                   (user, hash_password(pwd), is_admin))
     conn.commit()
 
-register_default_users()  # Run once to ensure default users are registered
+register_default_users()  # Run once to register default users
 
 # Initialize session states
 if 'logged_in' not in st.session_state:
@@ -90,68 +90,18 @@ else:
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
         if page == "Dashboard":
-                        
-            # Display model features dynamically based on selection
-            model_features = {
-                "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
-                "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
-                "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
-                "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
-            }
-            if st.button("Run"): 
-                if uploaded_file is None:
-                    st.error("Please upload a valid file before running.")
-                else:
-                    dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
-                    dataset_name = uploaded_file.name
-                    
-                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-                              (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
-                               "Used" if core_option == "CPU" else "Not Used",
-                               "Used" if core_option == "GPU" else "Not Used",
-                               "Used" if core_option == "HDFS" else "Not Used",
-                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-                    conn.commit()
-                    st.success("Run executed and details logged successfully!")
-                    
-                    # Display model features dynamically based on selection            if model_type in model_features:
-    st.write("### Model Features")
-    for feature in model_features[model_type]:
-        st.write(f"- {feature}")
-    if uploaded_file is None:
-        st.error("Please upload a valid file before running.")
-    else:
-        dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
-        dataset_name = uploaded_file.name
-        
-        c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-                  (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
-                   "Used" if core_option == "CPU" else "Not Used",
-                   "Used" if core_option == "GPU" else "Not Used",
-                   "Used" if core_option == "HDFS" else "Not Used",
-                   datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-        conn.commit()
-        st.success("Run executed and details logged successfully!")
-        
-        # Display model features dynamically based on selection            if model_type in model_features:
-    st.write("### Model Features")
-    for feature in model_features[model_type]:
-        st.write(f"- {feature}")
-                    
-                    # Display model features dynamically based on selection            if model_type in model_features:
-    st.write("### Model Features")
-    for feature in model_features[model_type]:
-        st.write(f"- {feature}")
+            st.title("Dataset Uploader and Model Selector")
+            uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
+            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
+            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
-            if st.button("Run"): 
+            if st.button("Run"):
                 if uploaded_file is None:
                     st.error("Please upload a valid file before running.")
                 else:
                     dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
                     dataset_name = uploaded_file.name
-                    
+
                     c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
                               (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
@@ -161,32 +111,20 @@ else:
                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                     conn.commit()
                     st.success("Run executed and details logged successfully!")
-                    
-                    # Display model features dynamically based on selection            if model_type in model_features:
-    st.write("### Model Features")
-    for feature in model_features[model_type]:
-        st.write(f"- {feature}")
-    if uploaded_file is None:
-        st.error("Please upload a valid file before running.")
-    else:
-        dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
-        dataset_name = uploaded_file.name
-        
-        c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-                  (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
-                   "Used" if core_option == "CPU" else "Not Used",
-                   "Used" if core_option == "GPU" else "Not Used",
-                   "Used" if core_option == "HDFS" else "Not Used",
-                   datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-        conn.commit()
-        st.success("Run executed and details logged successfully!")
-        
-        # Display model features dynamically based on selection            if model_type in model_features:
-    st.write("### Model Features")
-    for feature in model_features[model_type]:
-        st.write(f"- {feature}")
-        
+
+                    # Display model features dynamically based on selection
+                    model_features = {
+                        "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
+                        "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
+                        "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
+                        "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
+                    }
+
+                    if model_type in model_features:
+                        st.write("### Model Features")
+                        for feature in model_features[model_type]:
+                            st.write(f"- {feature}")
+
         elif page == "Log Page":
             st.title("Log Page")
             logs_df = pd.read_sql("SELECT * FROM logs", conn)
