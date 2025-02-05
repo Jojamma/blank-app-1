@@ -95,6 +95,24 @@ else:
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
             core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
             
+            # Display model features dynamically based on selection
+            model_features = {
+                "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
+                "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
+                "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
+                "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
+            }
+            
+            if model_type in model_features:
+                st.write("### Model Features")
+                for feature in model_features[model_type]:
+                    st.write(f"- {feature}")
+            
+            st.title("Dataset Uploader and Model Selector")
+            uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
+            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
+            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
+            
             if st.button("Run"):
                 if uploaded_file is None:
                     st.error("Please upload a valid file before running.")
