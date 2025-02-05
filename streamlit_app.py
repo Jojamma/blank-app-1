@@ -3,7 +3,7 @@ import pandas as pd
 import sqlite3
 import hashlib
 from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
+import time
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
@@ -81,27 +81,18 @@ else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
         st.write("Admin Dashboard: View all user logs.")
+        logs_placeholder = st.empty()
 
-        # Auto-refresh every 2 seconds
-        st_autorefresh(interval=2000, key="admin_logs_refresh")
-        
-        logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
-        if not logs_df.empty:
-            logs_df.drop(columns=["id"], inplace=True)
-            logs_df.set_index("timestamp", inplace=True)
-            st.dataframe(logs_df)
+        while True:
+            logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
+            if not logs_df.empty:
+                logs_df.drop(columns=["id"], inplace=True)
+                logs_df.set_index("timestamp", inplace=True)
+                logs_placeholder.dataframe(logs_df)
 
-            # Option to download logs as CSV
-            csv = logs_df.to_csv(index=True).encode("utf-8")
-            st.download_button("Download All Logs as CSV", data=csv, file_name="all_logs.csv", mime="text/csv")
-        else:
-            st.info("No logs available yet.")
-
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.session_state.is_admin = False
+            time.sleep(2)
             st.rerun()
+
     else:
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
@@ -142,12 +133,6 @@ else:
                 logs_df.drop(columns=["id"], inplace=True)
                 logs_df.set_index("timestamp", inplace=True)
                 st.dataframe(logs_df)
-
-                # Option to download logs as CSV
-                csv = logs_df.to_csv(index=True).encode("utf-8")
-                st.download_button("Download Log as CSV", data=csv, file_name="log_data.csv", mime="text/csv")
-            else:
-                st.info("No logs available yet.")
 
         if st.button("Logout"):
             st.session_state.logged_in = False
