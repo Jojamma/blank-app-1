@@ -79,7 +79,20 @@ if not st.session_state.logged_in:
 else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
-        st.write("Admin Dashboard: View user logs and manage data.")
+        st.write("Admin Dashboard: View all user logs.")
+
+        logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
+        if not logs_df.empty:
+            logs_df.drop(columns=["id"], inplace=True)
+            logs_df.set_index("timestamp", inplace=True)
+            st.dataframe(logs_df)
+
+            # Option to download logs as CSV
+            csv = logs_df.to_csv(index=True).encode("utf-8")
+            st.download_button("Download All Logs as CSV", data=csv, file_name="all_logs.csv", mime="text/csv")
+        else:
+            st.info("No logs available yet.")
+
         if st.button("Logout"):
             st.session_state.logged_in = False
             st.session_state.username = None
@@ -150,3 +163,4 @@ else:
             st.session_state.username = None
             st.session_state.is_admin = False
             st.rerun()
+
