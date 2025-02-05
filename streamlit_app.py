@@ -1,6 +1,12 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from google.cloud import firestore
+import json
+
+# Authenticate to Firestore using the service account key stored in Streamlit secrets
+key_dict = json.loads(st.secrets["textkey"])  # Assuming you store your key in secrets
+db = firestore.Client.from_service_account_info(key_dict)
 
 # Hardcoded credentials for demonstration (use a secure method in production)
 USER_CREDENTIALS = {
@@ -19,13 +25,20 @@ if 'logged_in' not in st.session_state:
 if 'active_users' not in st.session_state:
     st.session_state.active_users = []  # To track active users and timestamps
 
-if 'log_data' not in st.session_state:
-    st.session_state.log_data = []
-
 # Function to check credentials
 def check_credentials(username, password):
     return (username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password) or \
            (username in ADMIN_CREDENTIALS and ADMIN_CREDENTIALS[username] == password)
+
+# Function to log data to Firestore
+def log_data_to_firestore(log_entry):
+    db.collection("logs").add(log_entry)
+
+# Function to fetch logs from Firestore
+def fetch_logs_from_firestore():
+    logs_ref = db.collection("logs").order_by("Timestamp", direction=firestore.Query.DESCENDING)
+    logs = logs_ref.stream()
+    return [log.to_dict() for log in logs]
 
 # Login page logic
 if not st.session_state.logged_in:
@@ -116,18 +129,18 @@ else:
                         for feature in features[model_type]:
                             st.write(f"- {feature}")
 
-                        # Log details into session state with username tracking
+                        # Log details into Firestore with username tracking
                         new_log = {
                             "Username": username,
                             "Dataset Name": dataset_name,
                             "Dataset Size": f"{dataset_size / (1024 * 1024):.2f} MB",
                             "Model": model_type,
-                            "CPU": "Used" if core_option == "CPU" else "Not Used",
-                            "GPU": "Used" if core_option == "GPU" else "Not Used",
-                            "HDFS": "Used" if core_option == "HDFS" else "Not Used",
+                            "CPU": core_option == "CPU",
+                            "GPU": core_option == "GPU",
+                            "HDFS": core_option == "HDFS",
                             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         }
-                        st.session_state.log_data.insert(0, new_log)  # Insert at the start for recent-first ordering
+                        log_data_to_firestore(new_log)  # Log data to Firestore
 
                         st.success("Run executed and details logged successfully!")
 
@@ -137,13 +150,14 @@ else:
         elif page == "Log Page":
             st.title("Log Page")
 
-            # Display Log Table
-            if st.session_state.log_data:
-                log_df = pd.DataFrame(st.session_state.log_data)
+            # Display Log Table from Firestore
+            logs_data = fetch_logs_from_firestore()
+            if logs_data:
+                log_df = pd.DataFrame(logs_data)
                 log_df.set_index('Timestamp', inplace=True)
                 st.dataframe(log_df)
 
-                # Option to download the log data as CSV
+                # Option to download the log data as CSV (optional)
                 csv = log_df.to_csv(index=True).encode('utf-8')
                 st.download_button(
                     label="Download Log as CSV",
