@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 import hashlib
 from datetime import datetime
+import time
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
@@ -81,17 +82,21 @@ else:
         st.title("Admin Dashboard")
         st.write("Admin Dashboard: View all user logs.")
 
-        logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
-        if not logs_df.empty:
-            logs_df.drop(columns=["id"], inplace=True)
-            logs_df.set_index("timestamp", inplace=True)
-            st.dataframe(logs_df)
+        # Automatically refresh the logs
+        logs_placeholder = st.empty()
+        while True:
+            logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
+            if not logs_df.empty:
+                logs_df.drop(columns=["id"], inplace=True)
+                logs_df.set_index("timestamp", inplace=True)
+                logs_placeholder.dataframe(logs_df)
 
-            # Option to download logs as CSV
-            csv = logs_df.to_csv(index=True).encode("utf-8")
-            st.download_button("Download All Logs as CSV", data=csv, file_name="all_logs.csv", mime="text/csv")
-        else:
-            st.info("No logs available yet.")
+                # Option to download logs as CSV
+                csv = logs_df.to_csv(index=True).encode("utf-8")
+                st.download_button("Download All Logs as CSV", data=csv, file_name="all_logs.csv", mime="text/csv")
+            else:
+                logs_placeholder.info("No logs available yet.")
+            time.sleep(5)
 
         if st.button("Logout"):
             st.session_state.logged_in = False
@@ -131,19 +136,6 @@ else:
                     conn.commit()
                     st.success("Run executed and details logged successfully!")
 
-                    # Display model features dynamically based on selection
-                    model_features = {
-                        "Transformer": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Attention Mechanism"],
-                        "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
-                        "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
-                        "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
-                    }
-
-                    if model_type in model_features:
-                        st.write("### Model Features")
-                        for feature in model_features[model_type]:
-                            st.write(f"- {feature}")
-
         elif page == "Log Page":
             st.title("Log Page")
             logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
@@ -163,4 +155,3 @@ else:
             st.session_state.username = None
             st.session_state.is_admin = False
             st.rerun()
-
