@@ -100,6 +100,27 @@ else:
             }
             
             if st.button("Run"):
+                if uploaded_file is None:
+                    st.error("Please upload a valid file before running.")
+                else:
+                    dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
+                    dataset_name = uploaded_file.name
+                    
+                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                              (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
+                               "Used" if core_option == "CPU" else "Not Used",
+                               "Used" if core_option == "GPU" else "Not Used",
+                               "Used" if core_option == "HDFS" else "Not Used",
+                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                    conn.commit()
+                    st.success("Run executed and details logged successfully!")
+                    
+                    # Display model features dynamically based on selection
+                    if model_type in model_features:
+                        st.write("### Model Features")
+                        for feature in model_features[model_type]:
+                            st.write(f"- {feature}")
     if uploaded_file is None:
         st.error("Please upload a valid file before running.")
     else:
@@ -130,6 +151,27 @@ else:
             
                         
             if st.button("Run"):
+                if uploaded_file is None:
+                    st.error("Please upload a valid file before running.")
+                else:
+                    dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
+                    dataset_name = uploaded_file.name
+                    
+                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                              (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
+                               "Used" if core_option == "CPU" else "Not Used",
+                               "Used" if core_option == "GPU" else "Not Used",
+                               "Used" if core_option == "HDFS" else "Not Used",
+                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                    conn.commit()
+                    st.success("Run executed and details logged successfully!")
+                    
+                    # Display model features dynamically based on selection
+                    if model_type in model_features:
+                        st.write("### Model Features")
+                        for feature in model_features[model_type]:
+                            st.write(f"- {feature}")
     if uploaded_file is None:
         st.error("Please upload a valid file before running.")
     else:
