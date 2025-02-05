@@ -2,15 +2,14 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
-from datetime import datetime
-import time
-import os
-import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor
 import openai
+import nbformat
+import os
+from nbconvert.preprocessors import ExecutePreprocessor
+from datetime import datetime
 
-# Set the OpenAI API key
-openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your actual API key
+# OpenAI API Key (Replace with your own API key)
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
@@ -31,11 +30,15 @@ c.execute('''CREATE TABLE IF NOT EXISTS logs (
     cpu TEXT,
     gpu TEXT,
     hdfs TEXT,
-    user_code TEXT DEFAULT 'No Code Provided',
-    notebook_path TEXT DEFAULT '',
+    generated_code TEXT,
+    execution_status TEXT,
     timestamp TEXT
 )''')
 conn.commit()
+
+# Ensure `notebooks/` directory exists
+if not os.path.exists("notebooks"):
+    os.makedirs("notebooks")
 
 # Function to hash passwords
 def hash_password(password):
@@ -49,7 +52,49 @@ def check_credentials(username, password):
         return True, bool(user[1])
     return False, False
 
-# Function to register default users
+# Function to generate Python code dynamically using OpenAI
+def generate_python_code(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are an expert Python programmer."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response["choices"][0]["message"]["content"]
+
+# Function to create a Jupyter notebook from generated code
+def create_notebook(username, generated_code):
+    notebook_name = f"notebooks/{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.ipynb"
+
+    # Create a new notebook
+    nb = nbformat.v4.new_notebook()
+    code_cell = nbformat.v4.new_code_cell(generated_code)
+    nb.cells.append(code_cell)
+
+    # Save notebook
+    with open(notebook_name, 'w') as f:
+        nbformat.write(nb, f)
+    
+    return notebook_name
+
+# Function to execute the generated notebook
+def execute_notebook(notebook_path):
+    try:
+        with open(notebook_path) as f:
+            nb = nbformat.read(f, as_version=4)
+        
+        executor = ExecutePreprocessor(timeout=600, kernel_name='python3')
+        executor.preprocess(nb)
+
+        with open(notebook_path, 'w') as f:
+            nbformat.write(nb, f)
+
+        return "Execution Successful"
+    except Exception as e:
+        return f"Execution Failed: {str(e)}"
+
+# Register default users
 def register_default_users():
     default_users = {
         "admin": ("admin@123", 1),
@@ -64,63 +109,13 @@ def register_default_users():
 
 register_default_users()  # Run once to register default users
 
-# Function to generate Python code dynamically using OpenAI (Fixed for API v1.0.0+)
-def generate_code(dataset_path, model, mode):
-    """Generates Python code for the given dataset, model, and execution mode."""
-    prompt = f"""
-    Generate Python code to train a {model} model on a dataset located at {dataset_path}.
-    Use {mode} mode for execution. Include comments and timestamps for each step.
-    """
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a Python expert specializing in machine learning."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7  # Adjust temperature for creativity level
-        )
-        return response.choices[0].message.content  # Fixed OpenAI API syntax
-    
-    except Exception as e:
-        return f"# Error generating code: {e}"
-
-# Function to execute the generated code in a Jupyter Notebook
-def execute_jupyter_notebook(generated_code):
-    """Executes the generated Python code in a Jupyter Notebook."""
-    timestamp = int(time.time())
-    notebook_path = f"notebooks/generated_notebook_{timestamp}.ipynb"
-
-    # Create a new Jupyter notebook
-    nb = nbformat.v4.new_notebook()
-    nb.cells.append(nbformat.v4.new_code_cell(generated_code))
-
-    # Ensure the `notebooks/` directory exists
-    os.makedirs("notebooks", exist_ok=True)
-    with open(notebook_path, "w") as f:
-        nbformat.write(nb, f)
-
-    # Execute the notebook
-    try:
-        ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
-        with open(notebook_path, "r") as f:
-            nb = nbformat.read(f, as_version=4)
-        ep.preprocess(nb, {"metadata": {"path": "./"}})
-
-        with open(notebook_path, "w") as f:
-            nbformat.write(nb, f)
-
-        return notebook_path
-    except Exception as e:
-        return f"Execution failed: {e}"
-
 # Initialize session states
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = None
     st.session_state.is_admin = False
 
-# Login page logic
+# Login Page
 if not st.session_state.logged_in:
     st.title("Login Page")
     username = st.text_input("Username")
@@ -139,50 +134,60 @@ if not st.session_state.logged_in:
 else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
-        try:
-            logs_df = pd.read_sql(
-                "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs ORDER BY timestamp DESC",
-                conn
-            )
-            if not logs_df.empty:
-                logs_df.set_index("timestamp", inplace=True)
-                st.dataframe(logs_df)
-        except Exception as e:
-            st.error(f"Error loading logs: {e}")
+        logs_df = pd.read_sql(
+            "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, generated_code, execution_status, timestamp FROM logs ORDER BY timestamp DESC",
+            conn
+        )
+        if not logs_df.empty:
+            logs_df.set_index("timestamp", inplace=True)
+            st.dataframe(logs_df)
     else:
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
 
         if page == "Dashboard":
             st.title("Dataset Uploader and Model Selector")
+
+            # Upload Dataset
             uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
             if uploaded_file is not None:
                 dataset = pd.read_csv(uploaded_file)
-                st.write("### Dataset Columns")
-                st.write(dataset.columns.tolist())
+                st.write("### Dataset Preview")
+                st.dataframe(dataset.head())
 
-            # Code Generation and Execution
-            model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-            core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
-            generate_code_button = st.button("Generate Code")
+            # Generate Python Code
+            prompt = st.text_area("Describe your Python task (e.g., 'Train a linear regression model on the dataset')")
+            generated_code = ""
 
-            if generate_code_button and uploaded_file is not None:
-                dataset_path = uploaded_file.name
-                generated_code = generate_code(dataset_path, model_type, core_option)
-                st.session_state["generated_code"] = generated_code
-                st.code(generated_code, language="python")
+            if st.button("Generate Code"):
+                if prompt:
+                    generated_code = generate_python_code(prompt)
+                    st.code(generated_code, language="python")
+                else:
+                    st.error("Please enter a prompt to generate code.")
 
-            execute_button = st.button("Execute Code")
+            # Execute Code in Jupyter Notebook
+            if generated_code:
+                if st.button("Execute Code in Notebook"):
+                    notebook_path = create_notebook(st.session_state.username, generated_code)
+                    execution_status = execute_notebook(notebook_path)
 
-            if execute_button and "generated_code" in st.session_state:
-                notebook_path = execute_jupyter_notebook(st.session_state["generated_code"])
-                st.success(f"Notebook executed successfully! [Download Notebook]({notebook_path})")
+                    # Log execution
+                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, generated_code, execution_status, timestamp) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                              (st.session_state.username, uploaded_file.name if uploaded_file else "No Dataset",
+                               f"{uploaded_file.size / (1024 * 1024):.2f} MB" if uploaded_file else "0 MB",
+                               "N/A", "N/A", "N/A", "N/A",
+                               generated_code, execution_status,
+                               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                    conn.commit()
+                    st.success(f"Notebook executed successfully. Status: {execution_status}")
 
         elif page == "Log Page":
             st.title("Log Page")
             logs_df = pd.read_sql(
-                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
+                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, generated_code, execution_status, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
                 conn, params=(st.session_state.username,))
             if not logs_df.empty:
                 logs_df.set_index("timestamp", inplace=True)
