@@ -96,7 +96,7 @@ else:
                 st.download_button("Download All Logs as CSV", data=csv, file_name="all_logs.csv", mime="text/csv")
             else:
                 logs_placeholder.info("No logs available yet.")
-            time.sleep(5)
+            time.sleep(2)
 
         if st.button("Logout"):
             st.session_state.logged_in = False
