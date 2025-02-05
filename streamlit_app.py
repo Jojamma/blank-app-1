@@ -81,11 +81,12 @@ else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
         st.write("Admin Dashboard: View all user logs.")
+
         logs_placeholder = st.empty()
 
         while True:
             logs_df = pd.read_sql(
-                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp FROM logs ORDER BY timestamp DESC", conn
+                "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp FROM logs ORDER BY timestamp DESC", conn
             )
             if not logs_df.empty:
                 logs_df.set_index("timestamp", inplace=True)
