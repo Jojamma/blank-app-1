@@ -7,9 +7,16 @@ import nbformat
 import os
 from nbconvert.preprocessors import ExecutePreprocessor
 from datetime import datetime
+from dotenv import load_dotenv  # Securely load API keys
 
-# Set OpenAI API Key (Replace this with your actual key)
-openai.api_key = "YOUR_OPENAI_API_KEY"
+# Load environment variables from .env file
+load_dotenv()
+
+# ✅ Securely load API Key from environment variables
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+if openai.api_key is None:
+    raise ValueError("⚠️ OpenAI API Key is missing! Set OPENAI_API_KEY in environment variables.")
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
@@ -52,27 +59,28 @@ def check_credentials(username, password):
         return True, bool(user[1])
     return False, False
 
-# ✅ Updated Function to Generate Python Code Using OpenAI API (Fixed)
+# ✅ Secure OpenAI API Call (Updated)
 def generate_python_code(prompt):
-    response = openai.chat.completions.create(  # ✅ Updated OpenAI API call
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are an expert Python programmer."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return response.choices[0].message.content  # ✅ Fixed attribute access
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert Python programmer."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"⚠️ OpenAI API Error: {str(e)}"
 
 # Function to create a Jupyter notebook from generated code
 def create_notebook(username, generated_code):
     notebook_name = f"notebooks/{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.ipynb"
     
-    # Create a new notebook
     nb = nbformat.v4.new_notebook()
     code_cell = nbformat.v4.new_code_cell(generated_code)
     nb.cells.append(code_cell)
 
-    # Save notebook
     with open(notebook_name, 'w') as f:
         nbformat.write(nb, f)
     
@@ -107,7 +115,7 @@ def register_default_users():
                   (user, hash_password(pwd), is_admin))
     conn.commit()
 
-register_default_users()  # Run once to register default users
+register_default_users()
 
 # Initialize session states
 if 'logged_in' not in st.session_state:
@@ -148,7 +156,6 @@ else:
         if page == "Dashboard":
             st.title("Dataset Uploader and Model Selector")
 
-            # Upload Dataset
             uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
             if uploaded_file is not None:
@@ -156,13 +163,9 @@ else:
                 st.write("### Dataset Preview")
                 st.dataframe(dataset.head())
 
-            # Select Model Type
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
-            
-            # Select Core Option
             core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
-            # Generate Python Code
             prompt = st.text_area("Describe your Python task (e.g., 'Train a Transformer model on the dataset')")
             generated_code = ""
 
@@ -173,13 +176,11 @@ else:
                 else:
                     st.error("Please enter a prompt to generate code.")
 
-            # Execute Code in Jupyter Notebook
             if generated_code:
                 if st.button("Execute Code in Notebook"):
                     notebook_path = create_notebook(st.session_state.username, generated_code)
                     execution_status = execute_notebook(notebook_path)
 
-                    # Log execution
                     c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, generated_code, execution_status, timestamp) 
                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                               (st.session_state.username, uploaded_file.name if uploaded_file else "No Dataset",
