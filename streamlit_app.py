@@ -133,7 +133,7 @@ else:
 
         elif page == "Log Page":
             st.title("Log Page")
-            logs_df = pd.read_sql("SELECT * FROM logs", conn)
+            logs_df = pd.read_sql("SELECT * FROM logs ORDER BY timestamp DESC", conn)
             if not logs_df.empty:
                 logs_df.drop(columns=["id"], inplace=True)
                 logs_df.set_index("timestamp", inplace=True)
