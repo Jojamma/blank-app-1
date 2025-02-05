@@ -7,16 +7,15 @@ import nbformat
 import os
 from nbconvert.preprocessors import ExecutePreprocessor
 from datetime import datetime
-from dotenv import load_dotenv  # Securely load API keys
 
-# Load environment variables from .env file
-load_dotenv()
+# ✅ Securely Load OpenAI API Key (Streamlit Secrets or Environment Variables)
+try:
+    openai.api_key = st.secrets["OPENAI_API_KEY"]  # ✅ Load from Streamlit Secrets
+except:
+    openai.api_key = os.getenv("OPENAI_API_KEY")  # ✅ Load from Environment Variables
 
-# ✅ Securely load API Key from environment variables
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-if openai.api_key is None:
-    raise ValueError("⚠️ OpenAI API Key is missing! Set OPENAI_API_KEY in environment variables.")
+if not openai.api_key:
+    st.error("⚠️ OpenAI API Key is missing! Add it in Streamlit Secrets or environment variables.")
 
 # Database initialization
 conn = sqlite3.connect("user_data.db", check_same_thread=False)
