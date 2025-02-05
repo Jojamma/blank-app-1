@@ -31,19 +31,11 @@ c.execute('''CREATE TABLE IF NOT EXISTS logs (
     cpu TEXT,
     gpu TEXT,
     hdfs TEXT,
-    user_code TEXT,
-    notebook_path TEXT,
+    user_code TEXT DEFAULT 'No Code Provided',
+    notebook_path TEXT DEFAULT '',
     timestamp TEXT
 )''')
 conn.commit()
-
-# Ensure user_code and notebook_path columns exist
-try:
-    c.execute("ALTER TABLE logs ADD COLUMN user_code TEXT DEFAULT 'No Code Provided'")
-    c.execute("ALTER TABLE logs ADD COLUMN notebook_path TEXT DEFAULT ''")
-    conn.commit()
-except sqlite3.OperationalError:
-    pass  # Ignore if columns already exist
 
 # Function to hash passwords
 def hash_password(password):
@@ -72,7 +64,7 @@ def register_default_users():
 
 register_default_users()  # Run once to register default users
 
-# Function to generate Python code dynamically using OpenAI
+# Function to generate Python code dynamically using OpenAI (Fixed for API v1.0.0+)
 def generate_code(dataset_path, model, mode):
     """Generates Python code for the given dataset, model, and execution mode."""
     prompt = f"""
@@ -85,9 +77,11 @@ def generate_code(dataset_path, model, mode):
             messages=[
                 {"role": "system", "content": "You are a Python expert specializing in machine learning."},
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            temperature=0.7  # Adjust temperature for creativity level
         )
-        return response["choices"][0]["message"]["content"]
+        return response.choices[0].message.content  # Fixed OpenAI API syntax
+    
     except Exception as e:
         return f"# Error generating code: {e}"
 
@@ -145,12 +139,16 @@ if not st.session_state.logged_in:
 else:
     if st.session_state.is_admin:
         st.title("Admin Dashboard")
-        logs_df = pd.read_sql(
-            "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs ORDER BY timestamp DESC", conn
-        )
-        if not logs_df.empty:
-            logs_df.set_index("timestamp", inplace=True)
-            st.dataframe(logs_df)
+        try:
+            logs_df = pd.read_sql(
+                "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, notebook_path, timestamp FROM logs ORDER BY timestamp DESC",
+                conn
+            )
+            if not logs_df.empty:
+                logs_df.set_index("timestamp", inplace=True)
+                st.dataframe(logs_df)
+        except Exception as e:
+            st.error(f"Error loading logs: {e}")
     else:
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
