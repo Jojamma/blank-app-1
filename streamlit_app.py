@@ -92,6 +92,12 @@ else:
         if page == "Dashboard":
             st.title("Dataset Uploader and Model Selector")
             uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
+
+            if uploaded_file is not None:
+                dataset = pd.read_csv(uploaded_file)
+                st.write("### Dataset Columns")
+                st.write(dataset.columns.tolist())
+            
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
             core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
