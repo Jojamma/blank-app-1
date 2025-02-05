@@ -73,7 +73,7 @@ if not st.session_state.logged_in:
             st.session_state.username = username
             st.session_state.is_admin = is_admin
             st.success(f"Welcome, {username}!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid username or password.")
 else:
@@ -84,7 +84,7 @@ else:
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.is_admin = False
-            st.experimental_rerun()
+            st.rerun()
     else:
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Dashboard", "Log Page"])
@@ -130,4 +130,4 @@ else:
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.is_admin = False
-            st.experimental_rerun()
+            st.rerun()
