@@ -24,6 +24,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS logs (
     cpu TEXT,
     gpu TEXT,
     hdfs TEXT,
+    user_code TEXT,
     timestamp TEXT
 )''')
 conn.commit()
@@ -86,7 +87,7 @@ else:
 
         while True:
             logs_df = pd.read_sql(
-                "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp FROM logs ORDER BY timestamp DESC", conn
+                "SELECT username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, timestamp FROM logs ORDER BY timestamp DESC", conn
             )
             if not logs_df.empty:
                 logs_df.set_index("timestamp", inplace=True)
@@ -101,6 +102,8 @@ else:
 
         if page == "Dashboard":
             st.title("Dataset Uploader and Model Selector")
+
+            # Upload Dataset
             uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
             if uploaded_file is not None:
@@ -108,6 +111,10 @@ else:
                 st.write("### Dataset Columns")
                 st.write(dataset.columns.tolist())
 
+            # Code Input
+            user_code = st.text_area("Enter your custom code here (optional)")
+
+            # Model and Core Selection
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
             core_option = st.selectbox("Select Core Option:", ["CPU", "GPU", "HDFS"])
 
@@ -118,12 +125,13 @@ else:
                     dataset_size = uploaded_file.size / (1024 * 1024)  # Convert to MB
                     dataset_name = uploaded_file.name
 
-                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                    c.execute('''INSERT INTO logs (username, dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, timestamp) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
                               (st.session_state.username, dataset_name, f"{dataset_size:.2f} MB", model_type,
                                "Used" if core_option == "CPU" else "Not Used",
                                "Used" if core_option == "GPU" else "Not Used",
                                "Used" if core_option == "HDFS" else "Not Used",
+                               user_code if user_code else "No Code Provided",
                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                     conn.commit()
                     st.success("Run executed and details logged successfully!")
@@ -131,7 +139,7 @@ else:
         elif page == "Log Page":
             st.title("Log Page")
             logs_df = pd.read_sql(
-                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
+                "SELECT dataset_name, dataset_size, model, cpu, gpu, hdfs, user_code, timestamp FROM logs WHERE username = ? ORDER BY timestamp DESC",
                 conn, params=(st.session_state.username,))
             if not logs_df.empty:
                 logs_df.set_index("timestamp", inplace=True)
