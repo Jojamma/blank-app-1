@@ -116,8 +116,7 @@ else:
                     conn.commit()
                     st.success("Run executed and details logged successfully!")
                     
-                    # Display model features dynamically based on selection
-                                        if model_type in model_features:
+                    # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
         st.write(f"- {feature}")
@@ -137,14 +136,12 @@ else:
         conn.commit()
         st.success("Run executed and details logged successfully!")
         
-        # Display model features dynamically based on selection
-                            if model_type in model_features:
+        # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
         st.write(f"- {feature}")
                     
-                    # Display model features dynamically based on selection
-                                        if model_type in model_features:
+                    # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
         st.write(f"- {feature}")
@@ -167,8 +164,7 @@ else:
                     conn.commit()
                     st.success("Run executed and details logged successfully!")
                     
-                    # Display model features dynamically based on selection
-                                        if model_type in model_features:
+                    # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
         st.write(f"- {feature}")
@@ -188,8 +184,7 @@ else:
         conn.commit()
         st.success("Run executed and details logged successfully!")
         
-        # Display model features dynamically based on selection
-                            if model_type in model_features:
+        # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
         st.write(f"- {feature}")
