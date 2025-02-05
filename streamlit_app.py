@@ -8,7 +8,7 @@ import os
 from nbconvert.preprocessors import ExecutePreprocessor
 from datetime import datetime
 
-# OpenAI API Key (Replace with your own)
+# Set OpenAI API Key (Replace this with your actual key)
 openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # Database initialization
@@ -52,16 +52,16 @@ def check_credentials(username, password):
         return True, bool(user[1])
     return False, False
 
-# Function to generate Python code dynamically using OpenAI
+# ✅ Updated Function to Generate Python Code Using OpenAI API (Fixed)
 def generate_python_code(prompt):
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(  # ✅ Updated OpenAI API call
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are an expert Python programmer."},
             {"role": "user", "content": prompt}
         ]
     )
-    return response["choices"][0]["message"]["content"]
+    return response.choices[0].message.content  # ✅ Fixed attribute access
 
 # Function to create a Jupyter notebook from generated code
 def create_notebook(username, generated_code):
