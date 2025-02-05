@@ -24,10 +24,16 @@ c.execute('''CREATE TABLE IF NOT EXISTS logs (
     cpu TEXT,
     gpu TEXT,
     hdfs TEXT,
-    user_code TEXT,
     timestamp TEXT
 )''')
 conn.commit()
+
+# Ensure the user_code column exists
+try:
+    c.execute("ALTER TABLE logs ADD COLUMN user_code TEXT DEFAULT 'No Code Provided'")
+    conn.commit()
+except sqlite3.OperationalError:
+    pass  # Ignore error if column already exists
 
 # Function to hash passwords
 def hash_password(password):
@@ -112,7 +118,7 @@ else:
                 st.write(dataset.columns.tolist())
 
             # Code Input
-            user_code = st.text_area("Enter your code here ")
+            user_code = st.text_area("Enter your custom code here (optional)")
 
             # Model and Core Selection
             model_type = st.selectbox("Select Model Type:", ["Transformer", "CNN", "RNN", "ANN"])
