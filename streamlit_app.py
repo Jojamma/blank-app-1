@@ -97,9 +97,7 @@ else:
                 "CNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Convolutional Layers"],
                 "RNN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Hidden States"],
                 "ANN": ["Epoch", "Batch Size", "Iteration", "Learning Rate", "Activation Functions"]
-            }
-            
-            if st.button("Run"):
+            }            if st.button("Run"):
                 if uploaded_file is None:
                     st.error("Please upload a valid file before running.")
                 else:
@@ -144,10 +142,7 @@ else:
                     # Display model features dynamically based on selection            if model_type in model_features:
     st.write("### Model Features")
     for feature in model_features[model_type]:
-        st.write(f"- {feature}")
-            
-                        
-            if st.button("Run"):
+        st.write(f"- {feature}")            if st.button("Run"):
                 if uploaded_file is None:
                     st.error("Please upload a valid file before running.")
                 else:
